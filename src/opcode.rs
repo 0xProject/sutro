@@ -96,8 +96,11 @@ pub enum Opcode {
     Create2,
     StaticCall,
     Revert,
-    Invalid(u8),
+    Invalid,
     SelfDestruct,
+
+    // Unknown invalid opcode
+    Unknown(u8),
 }
 
 use Opcode::*;
@@ -186,9 +189,10 @@ impl From<u8> for Opcode {
             0xf5 => Create2,
             0xfa => StaticCall,
             0xfd => Revert,
+            0xfe => Invalid,
             0xff => SelfDestruct,
 
-            invalid => Invalid(invalid),
+            other => Unknown(other),
         }
     }
 }
@@ -206,7 +210,7 @@ impl Opcode {
     /// Is this the final instruction in a decoding sequence.
     pub fn is_block_final(self) -> bool {
         match self {
-            Stop | Jump | Return | Revert | Invalid(_) => true,
+            Stop | Jump | Return | Revert | Invalid | Unknown(_) => true,
             _ => false,
         }
     }
@@ -214,7 +218,7 @@ impl Opcode {
     /// Stack (consume, produce)
     pub fn stack(self) -> (usize, usize) {
         match self {
-            Stop | JumpDest | Invalid(_) => (0, 0),
+            Stop | JumpDest | Invalid | Unknown(_) => (0, 0),
             Address | Origin | Caller | CallValue | CallDataSize | CodeSize | GasPrice
             | ReturnDataSize | Coinbase | Timestamp | Number | Difficulty | GasLimit | PC
             | MSize | Gas | Push(_) => (0, 1),
@@ -263,7 +267,7 @@ impl Opcode {
             ExtCodeHash => 400,
             Balance => 400,
             BlockHash => 20,
-            Invalid(_) => 0,
+            Invalid | Unknown(_) => 0,
             // Special cases with dynamic gas (returns minimum not accounting for refunds)
             // TODO: Some of these only depend on a size argument on the stack.
             SStore => 5000,

@@ -55,12 +55,28 @@ impl std::fmt::Display for Block {
 }
 
 impl Block {
+    pub fn gas_cost(&self) -> usize {
+        let mut result = 0;
+        for inst in &self.instructions {
+            result += inst.0.base_gas();
+        }
+        result
+    }
+
+    pub fn apply(&self, stack: &mut Vec<Option<U256>>) {
+        for inst in &self.instructions {
+            inst.apply(stack);
+        }
+    }
+
     pub fn jump_targets(
         &self,
         stack: &mut Vec<Option<U256>>,
     ) -> Result<Vec<(usize, Vec<Option<U256>>)>, Error> {
         let mut result = Vec::default();
         for inst in &self.instructions {
+            //println!("{:?}", &stack);
+            //println!("{}", &inst.0);
             match inst.0 {
                 Opcode::Jump | Opcode::JumpI => {
                     let dest = stack[stack.len() - 1]
@@ -79,25 +95,5 @@ impl Block {
             }
         }
         Ok(result)
-    }
-
-    pub fn apply(&self, stack: &mut Vec<Option<U256>>) {
-        for inst in &self.instructions {
-            // println!("{:?}", &stack);
-            println!("{}", &inst);
-
-            match inst.0 {
-                Opcode::Jump | Opcode::JumpI => {
-                    let dest = stack[stack.len() - 1].as_ref().unwrap().clone();
-                    inst.apply(stack);
-                    dbg!(dest.as_usize(), &stack);
-
-                    // Recursively parse identified blocks.
-                }
-                _ => {
-                    inst.apply(stack);
-                }
-            }
-        }
     }
 }
