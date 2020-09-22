@@ -1,3 +1,4 @@
+use crate::Error;
 use crate::Opcode;
 use zkp_u256::{Zero, U256};
 
@@ -15,20 +16,28 @@ impl std::fmt::Display for Instruction {
 }
 
 impl Instruction {
-    pub fn apply(&self, stack: &mut Vec<Option<U256>>) {
+    /// Super simple symbolic executor
+    pub fn apply(&self, stack: &mut Vec<Option<U256>>) -> Result<(), Error> {
+        let (pop, push) = self.0.stack();
+        if pop > stack.len() {
+            return Err(Error::StackUnderflow);
+        }
         match self.0 {
             Opcode::Push(_) => stack.push(Some(self.1.clone())),
             Opcode::Dup(n) => stack.push(stack[stack.len() - (n as usize)].clone()),
             Opcode::Swap(n) => {
-                dbg!(n);
                 let last = stack.len() - 1;
                 stack.swap(last, last - (n as usize));
             }
-            other => {
-                let (pop, push) = other.stack();
-                stack.resize(stack.len() - pop, None);
+            Opcode::Invalid(_) => return Err(Error::InvalidOpcode),
+            _ => {
+                stack.truncate(stack.len() - pop);
                 stack.resize(stack.len() + push, None);
             }
         }
+        if stack.len() > 1024 {
+            return Err(Error::StackOverflow);
+        }
+        Ok(())
     }
 }

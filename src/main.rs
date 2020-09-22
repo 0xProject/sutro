@@ -1,17 +1,49 @@
 mod block;
+mod error;
 mod instruction;
 mod opcode;
 
 use crate::block::Block;
+use crate::error::Error;
 use crate::instruction::Instruction;
 use crate::opcode::Opcode;
 use hex_literal::hex;
 use zkp_u256::U256;
 
-fn main() {
+macro_rules! require {
+    ($requirement:expr, $error:expr) => {
+        if !$requirement {
+            Err($error)?;
+        }
+    };
+}
+
+fn recover_control_flow(
+    bytecode: &[u8],
+    pc: usize,
+    mut stack: Vec<Option<U256>>,
+) -> Result<(), Error> {
+    let block = Block::from(&bytecode[pc..]);
+    require!(
+        pc == 0 || block.instructions[0].0 == Opcode::JumpDest,
+        Error::InvalidJump
+    );
+    println!("{}:", pc);
+    println!("{}", block);
+
+    let jump_targets = block.jump_targets(&mut stack)?;
+    for (dest, stack) in jump_targets {
+        recover_control_flow(bytecode, dest, stack)?;
+    }
+
+    Ok(())
+}
+
+fn main() -> anyhow::Result<()> {
     println!("Sizeof Opcode {}", std::mem::size_of::<Opcode>());
     println!("Sizeof U256 {}", std::mem::size_of::<U256>());
     println!("Sizeof Instruction {}", std::mem::size_of::<Instruction>());
+    println!();
 
     let bytecode = hex!(
         "6080604052600436106049576000357c0100000000000000000000000000000
@@ -24,9 +56,7 @@ fn main() {
         60029"
     );
 
-    let block = Block::from(&bytecode[0..]);
-    println!("{}", block);
+    recover_control_flow(&bytecode, 0, Vec::default())?;
 
-    let mut stack = Vec::default();
-    block.apply(&mut stack);
+    Ok(())
 }

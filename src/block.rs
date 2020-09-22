@@ -1,10 +1,12 @@
+use crate::Error;
 use crate::Instruction;
 use crate::Opcode;
+use zkp_u256::Binary;
 use zkp_u256::{Zero, U256};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Block {
-    instructions: Vec<Instruction>,
+    pub instructions: Vec<Instruction>,
 }
 
 impl From<&[u8]> for Block {
@@ -53,11 +55,49 @@ impl std::fmt::Display for Block {
 }
 
 impl Block {
+    pub fn jump_targets(
+        &self,
+        stack: &mut Vec<Option<U256>>,
+    ) -> Result<Vec<(usize, Vec<Option<U256>>)>, Error> {
+        let mut result = Vec::default();
+        for inst in &self.instructions {
+            match inst.0 {
+                Opcode::Jump | Opcode::JumpI => {
+                    let dest = stack[stack.len() - 1]
+                        .as_ref()
+                        .ok_or(Error::ControlFlowEscaped)?
+                        .clone();
+                    if dest.bits() > 32 {
+                        return Err(Error::InvalidJump);
+                    }
+                    inst.apply(stack)?;
+                    result.push((dest.as_usize(), stack.clone()));
+                }
+                _ => {
+                    inst.apply(stack)?;
+                }
+            }
+        }
+        Ok(result)
+    }
+
     pub fn apply(&self, stack: &mut Vec<Option<U256>>) {
         for inst in &self.instructions {
-            println!("{:?}", &stack);
+            // println!("{:?}", &stack);
             println!("{}", &inst);
-            inst.apply(stack);
+
+            match inst.0 {
+                Opcode::Jump | Opcode::JumpI => {
+                    let dest = stack[stack.len() - 1].as_ref().unwrap().clone();
+                    inst.apply(stack);
+                    dbg!(dest.as_usize(), &stack);
+
+                    // Recursively parse identified blocks.
+                }
+                _ => {
+                    inst.apply(stack);
+                }
+            }
         }
     }
 }
