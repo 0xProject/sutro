@@ -1,6 +1,7 @@
 /// Ethereum Virtual Machine Opcodes.
 /// See <https://ethereum.github.io/yellowpaper/paper.pdf>
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[repr(u8)]
 pub enum Opcode {
     // 0x00-0x0B: Stop and Arithmetic Operations
     Stop,
@@ -173,78 +174,10 @@ impl From<u8> for Opcode {
             0x5a => Gas,
             0x5b => JumpDest,
 
-            0x60 => Push(1),
-            0x61 => Push(2),
-            0x62 => Push(3),
-            0x63 => Push(4),
-            0x64 => Push(5),
-            0x65 => Push(6),
-            0x66 => Push(7),
-            0x67 => Push(8),
-            0x68 => Push(9),
-            0x69 => Push(10),
-            0x6a => Push(11),
-            0x6b => Push(12),
-            0x6c => Push(13),
-            0x6d => Push(14),
-            0x6e => Push(15),
-            0x6f => Push(16),
-            0x70 => Push(17),
-            0x71 => Push(18),
-            0x72 => Push(19),
-            0x73 => Push(20),
-            0x74 => Push(21),
-            0x75 => Push(22),
-            0x76 => Push(23),
-            0x77 => Push(24),
-            0x78 => Push(25),
-            0x79 => Push(26),
-            0x7a => Push(27),
-            0x7b => Push(28),
-            0x7c => Push(29),
-            0x7d => Push(30),
-            0x7e => Push(31),
-            0x7f => Push(32),
-
-            0x80 => Dup(1),
-            0x81 => Dup(2),
-            0x82 => Dup(3),
-            0x83 => Dup(4),
-            0x84 => Dup(5),
-            0x85 => Dup(6),
-            0x86 => Dup(7),
-            0x87 => Dup(8),
-            0x88 => Dup(9),
-            0x89 => Dup(10),
-            0x8a => Dup(11),
-            0x8b => Dup(12),
-            0x8c => Dup(13),
-            0x8d => Dup(14),
-            0x8e => Dup(15),
-            0x8f => Dup(16),
-
-            0x90 => Swap(1),
-            0x91 => Swap(2),
-            0x92 => Swap(3),
-            0x93 => Swap(4),
-            0x94 => Swap(5),
-            0x95 => Swap(6),
-            0x96 => Swap(7),
-            0x97 => Swap(8),
-            0x98 => Swap(9),
-            0x99 => Swap(10),
-            0x9a => Swap(11),
-            0x9b => Swap(12),
-            0x9c => Swap(13),
-            0x9d => Swap(14),
-            0x9e => Swap(15),
-            0x9f => Swap(16),
-
-            0xa0 => Log(0),
-            0xa1 => Log(1),
-            0xa2 => Log(2),
-            0xa3 => Log(3),
-            0xa4 => Log(4),
+            0x60..=0x7F => Push(1 + opcode - 0x60),
+            0x80..=0x8F => Dup(1 + opcode - 0x80),
+            0x90..=0x9F => Swap(1 + opcode - 0x90),
+            0xA0..=0xA4 => Log(opcode - 0xA0),
 
             0xf0 => Create,
             0xf1 => Call,
@@ -263,7 +196,12 @@ impl From<u8> for Opcode {
 
 impl Opcode {
     pub fn to_u8(self) -> u8 {
-        todo!()
+        for u8 in 0..=255 {
+            if Opcode::from(u8) == self {
+                return u8;
+            }
+        }
+        panic!("{:?} has no Opcode::from value.", self);
     }
 
     /// Is this the final instruction in a decoding sequence.
@@ -350,8 +288,6 @@ impl Into<u8> for Opcode {
 
 impl std::fmt::Display for Opcode {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-        // or, alternatively:
-        // fmt::Debug::fmt(self, f)
+        std::fmt::Debug::fmt(self, f)
     }
 }
