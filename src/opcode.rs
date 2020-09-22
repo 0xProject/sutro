@@ -1,7 +1,6 @@
 /// Ethereum Virtual Machine Opcodes.
 /// See <https://ethereum.github.io/yellowpaper/paper.pdf>
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-#[repr(u8)]
 pub enum Opcode {
     // 0x00-0x0B: Stop and Arithmetic Operations
     Stop,
