@@ -1,6 +1,7 @@
 use crate::Error;
 use crate::Opcode;
 use cranelift::prelude::*;
+use std::collections::HashSet;
 use zkp_u256::{Binary, Zero, U256};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -12,10 +13,10 @@ pub enum Instruction {
     Push(U256),
 
     // Identified jumps
-    Jump(usize),
+    Jump(HashSet<usize>),
 
-    // Conditional brach (fallthrough, taken)
-    CondJump(usize, usize),
+    // Conditional brach (then, else)
+    CondJump(HashSet<usize>, usize),
 
     // Fallthrough to next block
     Fallthrough(usize),

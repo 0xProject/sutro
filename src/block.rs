@@ -3,6 +3,7 @@ use crate::Error;
 use crate::Instruction;
 use crate::Opcode;
 use cranelift::prelude::{Block as JitBlock, *};
+use std::collections::HashSet;
 use zkp_u256::Binary;
 use zkp_u256::{Zero, U256};
 
@@ -45,8 +46,8 @@ impl Block {
                     pc += n;
                     Instruction::Push(U256::from_bytes_be(&padded))
                 }
-                Opcode::Jump => Instruction::Jump(0),
-                Opcode::JumpI => Instruction::CondJump(0, pc),
+                Opcode::Jump => Instruction::Jump(HashSet::default()),
+                Opcode::JumpI => Instruction::CondJump(HashSet::default(), pc),
                 Opcode::JumpDest => {
                     if instructions.is_empty() {
                         Instruction::Opcode(Opcode::JumpDest)
@@ -83,15 +84,16 @@ impl Block {
     }
 
     pub fn jump_targets(
-        &self,
+        &mut self,
         mut stack: Vec<Option<U256>>,
     ) -> Result<Vec<(usize, Vec<Option<U256>>)>, Error> {
         for inst in &self.instructions[..self.instructions.len() - 1] {
             inst.apply(&mut stack)?;
         }
-        let last = self.instructions.last().unwrap();
+        let last = self.instructions.last_mut().unwrap();
         Ok(match last {
-            Instruction::CondJump(_, fallthrough) => {
+            Instruction::CondJump(branchSet, fallthrough) => {
+                let fallthrough = *fallthrough;
                 let branch = &stack
                     .last()
                     .ok_or(Error::StackUnderflow)?
@@ -99,10 +101,11 @@ impl Block {
                     .ok_or(Error::ControlFlowEscaped)?;
                 require!(branch.bits() < 32, Error::InvalidJump);
                 let branch = branch.as_usize();
+                branchSet.insert(branch);
                 last.apply(&mut stack)?;
-                vec![(*fallthrough, stack.clone()), (branch, stack)]
+                vec![(fallthrough, stack.clone()), (branch, stack)]
             }
-            Instruction::Jump(_) => {
+            Instruction::Jump(branchSet) => {
                 let branch = stack
                     .last()
                     .ok_or(Error::StackUnderflow)?
@@ -110,6 +113,7 @@ impl Block {
                     .ok_or(Error::ControlFlowEscaped)?;
                 require!(branch.bits() < 32, Error::InvalidJump);
                 let branch = branch.as_usize();
+                branchSet.insert(branch);
                 last.apply(&mut stack)?;
                 vec![(branch, stack)]
             }

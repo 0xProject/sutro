@@ -48,12 +48,9 @@ impl Program {
         // Decompile block if not done already
         if !self.blocks.contains_key(&pc) {
             let block = Block::from_pc(&self.bytecode, pc);
-            println!("{}: ({} gas)", pc, block.gas_cost());
-            println!("{}", block);
-
             self.blocks.insert(pc, block);
         }
-        let block = &self.blocks[&pc];
+        let block = &mut self.blocks.get_mut(&pc).unwrap();
 
         // Find more blocks
         let jump_targets = block.jump_targets(stack)?;
@@ -85,6 +82,10 @@ fn main() -> anyhow::Result<()> {
     );
 
     let prog = Program::from(bytecode.to_vec())?;
+    for (pc, block) in &prog.blocks {
+        println!("{}: ({} gas)", pc, block.gas_cost());
+        println!("{}", block);
+    }
 
     let builder = SimpleJITBuilder::new(cranelift_module::default_libcall_names());
     let module: Module<SimpleJITBackend> = Module::new(builder);
