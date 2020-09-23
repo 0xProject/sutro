@@ -1,3 +1,4 @@
+/// Three-value logic
 enum TriStateBool {
     True,
     False,

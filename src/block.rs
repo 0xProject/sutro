@@ -24,19 +24,28 @@ impl From<&[u8]> for Block {
                 opcode
             };
 
-            // Read payload for Push opcodes
-            let payload = if let Opcode::Push(n) = opcode {
-                let n = n as usize;
-                let mut padded = [0_u8; 32];
-                padded[(32 - n)..].copy_from_slice(&reader[0..n]);
-                reader = &reader[n..];
-                U256::from_bytes_be(&padded)
-            } else {
-                U256::zero()
-            };
-
-            // Append to block
-            instructions.push(Instruction(opcode, payload));
+            // Add instruction
+            match opcode {
+                Opcode::Push(n) => {
+                    // Read payload for Push instructions
+                    let n = n as usize;
+                    let mut padded = [0_u8; 32];
+                    padded[(32 - n)..].copy_from_slice(&reader[0..n]);
+                    reader = &reader[n..];
+                    instructions.push(Instruction::Push(U256::from_bytes_be(&padded)));
+                }
+                Opcode::JumpI => {
+                    // TODO: CondJump instruction
+                    instructions.push(Instruction::Opcode(Opcode::JumpI));
+                }
+                Opcode::JumpDest => {
+                    // If we hit a JumpDest, cut the block and insert a fallthrough.
+                    // TODO
+                    instructions.push(Instruction::Opcode(Opcode::JumpDest));
+                }
+                opcode => instructions.push(Instruction::Opcode(opcode)),
+            }
+            // End block after a block-final opcode (
             if opcode.is_block_final() {
                 break;
             }
@@ -58,7 +67,7 @@ impl Block {
     pub fn gas_cost(&self) -> usize {
         let mut result = 0;
         for inst in &self.instructions {
-            result += inst.0.base_gas();
+            result += inst.opcode().map_or(0, |op| op.base_gas());
         }
         result
     }
@@ -77,7 +86,7 @@ impl Block {
         for inst in &self.instructions {
             //println!("{:?}", &stack);
             //println!("{}", &inst.0);
-            match inst.0 {
+            match inst.opcode().unwrap() {
                 Opcode::Jump | Opcode::JumpI => {
                     let dest = stack[stack.len() - 1]
                         .as_ref()

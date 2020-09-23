@@ -40,7 +40,7 @@ impl Program {
         if !self.blocks.contains_key(&pc) {
             let block = Block::from(&self.bytecode[pc..]);
             require!(
-                pc == 0 || block.instructions[0].0 == Opcode::JumpDest,
+                pc == 0 || block.instructions[0] == Instruction::Opcode(Opcode::JumpDest),
                 Error::InvalidJump
             );
             println!("{}: ({} gas)", pc, block.gas_cost());
