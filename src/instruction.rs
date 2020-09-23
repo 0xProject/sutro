@@ -31,6 +31,7 @@ impl std::fmt::Display for Instruction {
                     write!(f, "Push({})", value.as_u128())
                 }
             }
+            Instruction::Opcode(op) => std::fmt::Display::fmt(op, f),
             _ => write!(f, "{:?}", self),
         }
     }

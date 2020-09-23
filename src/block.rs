@@ -1,3 +1,4 @@
+use crate::require;
 use crate::Error;
 use crate::Instruction;
 use crate::Opcode;
@@ -20,14 +21,13 @@ impl std::fmt::Display for Block {
 }
 impl From<&[u8]> for Block {
     fn from(bytecode: &[u8]) -> Self {
-        Block::from(bytecode, 0)
+        Block::from_pc(bytecode, 0)
     }
 }
 
 impl Block {
-    fn from(bytecode: &[u8], mut pc: usize) -> Self {
+    pub fn from_pc(bytecode: &[u8], mut pc: usize) -> Self {
         let mut instructions = Vec::default();
-        let mut reader = &bytecode[0..];
         loop {
             // Read next opcode
             // Programs are implicitly zero padded
@@ -47,12 +47,21 @@ impl Block {
                 }
                 Opcode::Jump => Instruction::Jump(0),
                 Opcode::JumpI => Instruction::CondJump(0, pc),
-                Opcode::JumpDest => Instruction::Fallthrough(pc),
+                Opcode::JumpDest => {
+                    if instructions.is_empty() {
+                        Instruction::Opcode(Opcode::JumpDest)
+                    } else {
+                        Instruction::Fallthrough(pc - 1)
+                    }
+                }
                 opcode => Instruction::Opcode(opcode),
             });
 
-            // End block after a block-final opcode (
-            if instructions.last().unwrap().is_block_final() {
+            // End block after a block-final opcode (except JumDest at start)
+            // Single instruction blocks are invalid?
+            if instructions.last().unwrap().is_block_final()
+                && !(instructions.len() == 1 && opcode == Opcode::JumpDest)
+            {
                 break;
             }
         }
@@ -75,30 +84,38 @@ impl Block {
 
     pub fn jump_targets(
         &self,
-        stack: &mut Vec<Option<U256>>,
+        mut stack: Vec<Option<U256>>,
     ) -> Result<Vec<(usize, Vec<Option<U256>>)>, Error> {
-        let mut result = Vec::default();
-        for inst in &self.instructions {
-            //println!("{:?}", &stack);
-            //println!("{}", &inst.0);
-            match inst.opcode().unwrap() {
-                Opcode::Jump | Opcode::JumpI => {
-                    let dest = stack[stack.len() - 1]
-                        .as_ref()
-                        .ok_or(Error::ControlFlowEscaped)?
-                        .clone();
-                    if dest.bits() > 32 {
-                        return Err(Error::InvalidJump);
-                    }
-                    inst.apply(stack)?;
-                    result.push((dest.as_usize(), stack.clone()));
-                }
-                _ => {
-                    inst.apply(stack)?;
-                }
-            }
+        for inst in &self.instructions[..self.instructions.len() - 1] {
+            inst.apply(&mut stack)?;
         }
-        Ok(result)
+        let last = self.instructions.last().unwrap();
+        Ok(match last {
+            Instruction::CondJump(_, fallthrough) => {
+                let branch = &stack
+                    .last()
+                    .ok_or(Error::StackUnderflow)?
+                    .as_ref()
+                    .ok_or(Error::ControlFlowEscaped)?;
+                require!(branch.bits() < 32, Error::InvalidJump);
+                let branch = branch.as_usize();
+                last.apply(&mut stack)?;
+                vec![(*fallthrough, stack.clone()), (branch, stack)]
+            }
+            Instruction::Jump(_) => {
+                let branch = stack
+                    .last()
+                    .ok_or(Error::StackUnderflow)?
+                    .as_ref()
+                    .ok_or(Error::ControlFlowEscaped)?;
+                require!(branch.bits() < 32, Error::InvalidJump);
+                let branch = branch.as_usize();
+                last.apply(&mut stack)?;
+                vec![(branch, stack)]
+            }
+            Instruction::Fallthrough(fallthrough) => vec![(*fallthrough, stack)],
+            _ => vec![],
+        })
     }
 
     pub fn render<'a>(&self, builder: &mut FunctionBuilder<'a>) -> JitBlock {
