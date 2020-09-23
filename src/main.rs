@@ -1,5 +1,4 @@
 mod block;
-mod block_jit;
 mod error;
 mod instruction;
 mod opcode;
@@ -105,7 +104,7 @@ fn main() -> anyhow::Result<()> {
     let shared_flags = settings::Flags::new(shared_builder);
     let isa = cranelift::codegen::isa::lookup_by_name("x86_64")?.finish(shared_flags);
 
-    println!("{}", builder.display(Some(isa.as_ref())));
+    // println!("{}", builder.display(Some(isa.as_ref())));
 
     Ok(())
 }

@@ -13,6 +13,8 @@ pub enum Instruction {
 
     // Identified jumps
     Jump(usize),
+
+    // Conditional brach (fallthrough, taken)
     CondJump(usize, usize),
 
     // Fallthrough to next block
@@ -29,8 +31,7 @@ impl std::fmt::Display for Instruction {
                     write!(f, "Push({})", value.as_u128())
                 }
             }
-            Instruction::Fallthrough(_) => write!(f, "Fallthrough"),
-            _ => write!(f, "{}", self.opcode().unwrap()),
+            _ => write!(f, "{:?}", self),
         }
     }
 }
@@ -43,6 +44,14 @@ impl Instruction {
             Instruction::Jump(_) => Some(Opcode::Jump),
             Instruction::CondJump(_, _) => Some(Opcode::JumpI),
             Instruction::Fallthrough(_) => None,
+        }
+    }
+
+    pub fn is_block_final(&self) -> bool {
+        match self {
+            Instruction::Opcode(opcode) => opcode.is_block_final(),
+            Instruction::Push(_) => false,
+            _ => true,
         }
     }
 
