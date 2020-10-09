@@ -207,6 +207,14 @@ impl Opcode {
         panic!("{:?} has no Opcode::from value.", self);
     }
 
+    /// The encoded size of the opcode (how much it moves the program counter)
+    pub fn encoded_size(self) -> usize {
+        match self {
+            Push(n) => (n as usize) + 1,
+            _ => 1,
+        }
+    }
+
     /// Is this the final instruction in a decoding sequence.
     pub fn is_block_final(self) -> bool {
         match self {
