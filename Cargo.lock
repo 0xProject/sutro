@@ -592,6 +592,7 @@ dependencies = [
  "tiny-keccak 2.0.2",
  "tokio",
  "web3",
+ "zkp-macros-decl",
  "zkp-u256",
 ]
 
@@ -2314,9 +2315,39 @@ dependencies = [
 ]
 
 [[package]]
+name = "zkp-macros-decl"
+version = "0.1.0"
+source = "git+https://github.com/0xProject/OpenZKP.git#a4fbf23d65f3f2443a8db5ae192f61b7d812a5f7"
+dependencies = [
+ "proc-macro-hack",
+ "zkp-macros-impl",
+]
+
+[[package]]
+name = "zkp-macros-impl"
+version = "0.1.0"
+source = "git+https://github.com/0xProject/OpenZKP.git#a4fbf23d65f3f2443a8db5ae192f61b7d812a5f7"
+dependencies = [
+ "proc-macro-hack",
+ "proc-macro2",
+ "zkp-macros-lib",
+]
+
+[[package]]
+name = "zkp-macros-lib"
+version = "0.1.0"
+source = "git+https://github.com/0xProject/OpenZKP.git#a4fbf23d65f3f2443a8db5ae192f61b7d812a5f7"
+dependencies = [
+ "hex",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "zkp-u256"
 version = "0.1.1"
-source = "git+https://github.com/0xProject/OpenZKP.git#2c392e0760251c7e90b753cdc8d90bacbb7a4fde"
+source = "git+https://github.com/0xProject/OpenZKP.git#a4fbf23d65f3f2443a8db5ae192f61b7d812a5f7"
 dependencies = [
  "crunchy",
  "hex",
