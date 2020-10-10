@@ -1,114 +1,64 @@
+mod chain;
 mod evm;
 mod interpreter;
 
 use crate::{
-    evm::{BlockInfo, CallInfo, ChainState, TransactionInfo},
+    evm::{BlockInfo, CallInfo, ExecutionResult, TransactionInfo},
     interpreter::evaluate,
 };
+use chain::EthJsonRpc;
+use hex_literal::hex;
 use std::{collections::HashMap, str::FromStr};
 use tokio;
 use web3::types::{BlockId, BlockNumber, U64};
 use zkp_macros_decl::u256h;
 use zkp_u256::{One, Zero, U256};
+
 // Copy source to destination, padding with zeros
 // fn padded_copy(source: &[u8], destination: &[u8]) {}
 
-#[derive(Clone, Debug)]
-struct Fork {
-    url:   String,
-    block: Option<u64>,
-}
+struct Chain {}
 
-fn h160_to_u256(h160: &web3::types::H160) -> U256 {
-    let mut bytes = [0_u8; 32];
-    bytes[12..32].copy_from_slice(h160.as_fixed_bytes());
-    U256::from_bytes_be(&bytes)
-}
-
-fn h256_convert(value: &web3::types::H256) -> U256 {
-    u256_convert(&web3::types::U256::from_big_endian(value.as_bytes()))
-}
-
-fn u256_convert(value: &web3::types::U256) -> U256 {
-    let mut big_endian = [0_u8; 32];
-    value.to_big_endian(&mut big_endian);
-    U256::from_bytes_be(&big_endian)
+struct AccountState {
+    nonce:   usize,
+    balance: U256,
+    code:    Vec<u8>,
 }
 
 #[tokio::main]
 async fn main() -> web3::Result<()> {
     env_logger::init();
 
-    let transport = web3::transports::Http::new("http://localhost:8545")?;
-    let web3 = web3::Web3::new(transport);
+    // Chain state
+    let mut chain_state = EthJsonRpc::new().await?;
 
-    let latest = web3.eth().block_number().await?.as_u64();
-    println!("Latest block: {}", latest);
-    let latest = 11017418;
-    let block_number = BlockNumber::Number(U64([latest]));
-    let block_id = BlockId::Number(block_number);
-    let block = web3.eth().block_with_txs(block_id).await?.unwrap();
-    dbg!(block.hash);
-
-    // for tx in &block.transactions {
-    //    println!("0x{}", hex::encode(&tx.input.0));
-    //}
-
-    let tx = &block.transactions[3];
-    let input = &tx.input.0;
-    let receiver = tx.to.unwrap_or_default();
-    println!("Tx: {:?}", tx.hash);
-    println!("Receiver: {:?}", receiver);
-    println!("Input: 0x{}", hex::encode(&input));
-
-    // NOTE: Ideally we'd specify the exact blocknumber, but that makes the RPC call
-    // fail with `missing trie node`. So we fetch from latest instead.
-    // Fortunately code is immutable except from being able to reset to empty.
-    let code = web3.eth().code(receiver, None).await?.0;
-    println!("Code: 0x{}", hex::encode(&code[0..100]));
-
-    let mut chain = ChainState {
-        code:    HashMap::new(),
-        storage: HashMap::new(),
-    };
     let block = BlockInfo {
-        timestamp: block.timestamp.low_u64(),
+        // number : 11017418
+        timestamp: 1602194355,
     };
     let transaction = TransactionInfo {
-        origin:    h160_to_u256(&tx.from),
-        gas_price: u256_convert(&tx.gas_price),
+        origin:    u256h!("000000000000000000000000f82ffee7eda1dd212dd0d867e57aa174dc207d7e"),
+        gas_price: U256::from(1),
     };
     let call = CallInfo {
-        initial_gas: tx.gas.as_usize(),
-        sender:      transaction.origin.clone(),
-        address:     h160_to_u256(&tx.to.unwrap()),
-        call_value:  u256_convert(&tx.value),
-        input:       tx.input.0.clone(),
+        sender: transaction.origin.clone(),
+        address: u256h!("0000000000000000000000007a250d5630b4cf539739df2c5dacb4c659f2488d"),
+        call_value: U256::zero(),
+        initial_gas: 153_840,
+        input: hex!("7ff36ab50000000000000000000000000000000000000000000000003c8902c25aa4f85d0000000000000000000000000000000000000000000000000000000000000080000000000000000000000000f82ffee7eda1dd212dd0d867e57aa174dc207d7e000000000000000000000000000000000000000000000000000000005f7f90380000000000000000000000000000000000000000000000000000000000000002000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000468ab3b1f63a1c14b361bc367c3cc92277588da1").to_vec(),
     };
 
-    // Add code for current contract
-    chain.code.insert(h160_to_u256(&receiver), code);
-
-    // Add code for an aux contract being queried
-    let ext = web3::types::H160::from_str("164ed0df02b3747315b50b806b79962ad9517578").unwrap();
-    let code = web3.eth().code(ext, None).await?.0;
-    chain.code.insert(h160_to_u256(&ext), code);
-
-    // Add storage
-    // NOTE: Hardcoding values from that block because we don't have an archival
-    // node.
-    let _value = web3
-        .eth()
-        .storage(ext, web3::types::U256::from(8), None)
-        .await?;
-    let value = u256h!("5f7f8b9000000000001ad42a56757431b7770000000000393051e01d03863a5f");
-    chain
-        .storage
-        .insert((h160_to_u256(&ext), U256::from(8)), value);
-
     // Run transaction
-    let result = evaluate(&mut chain, &block, &transaction, &call);
+    let result = evaluate(&mut chain_state, &block, &transaction, &call);
     println!("Result: {:?}", result);
+    if let ExecutionResult::Revert(result) = result {
+        println!("Revert: {}", hex::encode(&result));
+
+        let param_type = ethabi::param_type::Reader::read("Error(string)").unwrap();
+
+        let decoded = ethabi::decode(&[ethabi::ParamType::String], &result[4..]);
+        dbg!(decoded);
+    }
 
     Ok(())
 }

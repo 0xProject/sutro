@@ -5,12 +5,6 @@ pub use opcode::Opcode;
 use std::collections::HashMap;
 use zkp_u256::U256;
 
-#[derive(Clone, Debug)]
-pub struct ChainState {
-    pub code:    HashMap<U256, Vec<u8>>,
-    pub storage: HashMap<(U256, U256), U256>,
-}
-
 /// Constant for the current block
 #[derive(Clone, Debug)]
 pub struct BlockInfo {

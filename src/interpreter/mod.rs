@@ -1,11 +1,11 @@
-use crate::evm::{
-    precompiles::keccak256, BlockInfo, CallInfo, ChainState, ExecutionResult, Opcode,
-    TransactionInfo,
+use crate::{
+    chain::ChainState,
+    evm::{precompiles::keccak256, BlockInfo, CallInfo, ExecutionResult, Opcode, TransactionInfo},
 };
+use log::info;
 use zkp_u256::{One, Zero, U256};
 
 /// Variables during execution
-#[derive(Debug)]
 struct ExecutionState<'a> {
     chain:       &'a mut ChainState,
     block:       &'a BlockInfo,
@@ -20,12 +20,12 @@ struct ExecutionState<'a> {
 }
 
 pub fn evaluate(
-    chain: &mut ChainState,
+    chain: &mut dyn ChainState,
     block: &BlockInfo,
     transaction: &TransactionInfo,
     call: &CallInfo,
 ) -> ExecutionResult {
-    let code = chain.code[&call.address].clone();
+    let code = chain.code(&call.address);
     let mut exec = ExecutionState {
         chain,
         block,
@@ -57,10 +57,10 @@ impl<'a> ExecutionState<'a> {
             .code
             .get(self.pc)
             .map_or(Opcode::Stop, |b| Opcode::from(*b));
-        match op {
-            Opcode::Push(_) => {}
-            op => println!("{:05} {}", self.pc, op),
-        }
+        // match op {
+        // Opcode::Push(_) => {}
+        // op => println!("{:05} {}", self.pc, op),
+        // }
         self.pc += 1;
 
         // Dispatch opcode
@@ -72,7 +72,7 @@ impl<'a> ExecutionState<'a> {
                 let mut padded = [0_u8; 32];
                 padded[(32 - n)..].copy_from_slice(&self.code[self.pc..self.pc + n]);
                 let argument = U256::from_bytes_be(&padded);
-                println!("{:05} {} {}", self.pc - 1, op, argument);
+                // println!("{:05} {} {}", self.pc - 1, op, argument);
                 self.pc += n;
                 self.stack.push(argument);
             }
@@ -192,7 +192,6 @@ impl<'a> ExecutionState<'a> {
                 let target = self.stack.pop().unwrap();
                 let condition = self.stack.pop().unwrap();
                 if !condition.is_zero() {
-                    println!("Branch taken");
                     self.pc = target.as_usize();
                 }
             }
@@ -214,50 +213,27 @@ impl<'a> ExecutionState<'a> {
                 }
                 self.stack.push(U256::from_bytes_be(&bytes32));
             }
-            Opcode::CallDataCopy => {
-                let destination = self.stack.pop().unwrap().as_usize();
-                let source = self.stack.pop().unwrap().as_usize();
-                let size = self.stack.pop().unwrap().as_usize();
-                if source + size < self.call.input.len() {
-                    self.memory[destination..destination + size]
-                        .copy_from_slice(&self.call.input[source..source + size]);
-                } else {
-                    let n = self.call.input.len() - source;
-                    self.memory[destination..destination + n]
-                        .copy_from_slice(&self.call.input[source..source + n]);
-                    for byte in &mut self.memory[destination + n..destination + size] {
-                        *byte = 0;
-                    }
-                }
-            }
             Opcode::ReturnDataSize => {
                 self.stack.push(U256::from(self.return_data.len()));
             }
+            Opcode::CallDataCopy => self.handle_copy(&self.call.input),
             Opcode::ReturnDataCopy => {
-                let destination = self.stack.pop().unwrap().as_usize();
-                let source = self.stack.pop().unwrap().as_usize();
-                let size = self.stack.pop().unwrap().as_usize();
-                if source + size < self.return_data.len() {
-                    self.memory[destination..destination + size]
-                        .copy_from_slice(&self.return_data[source..source + size]);
-                } else {
-                    let n = self.return_data.len() - source;
-                    self.memory[destination..destination + n]
-                        .copy_from_slice(&self.return_data[source..source + n]);
-                    for byte in &mut self.memory[destination + n..destination + size] {
-                        *byte = 0;
-                    }
-                }
+                // HACK: Temporarily swap out return_data without cloning.
+                let mut return_data = Vec::new();
+                std::mem::swap(&mut self.return_data, &mut return_data);
+                self.handle_copy(&return_data);
+                std::mem::swap(&mut self.return_data, &mut return_data);
             }
+            Opcode::CodeCopy => self.handle_copy(&self.code),
             Opcode::SLoad => {
                 let slot = self.stack.pop().unwrap();
                 println!("SLOAD {:?}", slot);
                 self.stack
-                    .push(self.chain.storage[&(self.call.address.clone(), slot)].clone());
+                    .push(self.chain.storage(&self.call.address, &slot));
             }
             Opcode::ExtCodeSize => {
                 let address = self.stack.pop().unwrap();
-                let size = self.chain.code[&address].len();
+                let size = self.chain.code(&address).len();
                 self.stack.push(U256::from(size));
             }
             Opcode::StaticCall => {
@@ -272,9 +248,10 @@ impl<'a> ExecutionState<'a> {
                     initial_gas,
                     call_value: U256::zero(),
                     address,
-                    input: self.memory[in_size..in_size + in_offset].to_vec(),
+                    input: self.memory[in_offset..in_offset + in_size].to_vec(),
                 };
-                println!("Calling {:?}", &call.address);
+                // TODO: Print using bytes4-dictionary based ABI decoder.
+                info!("Calling {:?} {}", &call.address, hex::encode(&call.input));
                 let result = evaluate(self.chain, self.block, self.transaction, &call);
                 self.stack.push(match result {
                     ExecutionResult::Return(_) => U256::one(),
@@ -314,5 +291,21 @@ impl<'a> ExecutionState<'a> {
         };
 
         None
+    }
+
+    /// Handle copy operations from a source array to memory
+    ///
+    /// Offsets and sizes are popped from stack. `source` is implicitly
+    /// zero extended.
+    fn handle_copy(&mut self, source: &[u8]) {
+        let offset = self.stack.pop().unwrap().as_usize();
+        let source_offset = self.stack.pop().unwrap().as_usize();
+        let want_size = self.stack.pop().unwrap().as_usize();
+        let size = std::cmp::min(want_size, source.len() - source_offset);
+        let source_slice = &source[source_offset..source_offset + size];
+        self.memory[offset..offset + size].copy_from_slice(source_slice);
+        for byte in self.memory[offset + size..offset + want_size].iter_mut() {
+            *byte = 0;
+        }
     }
 }
