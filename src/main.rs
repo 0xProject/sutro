@@ -1,6 +1,7 @@
 mod chain;
 mod evm;
 mod interpreter;
+mod yul;
 
 use crate::{
     evm::{BlockInfo, CallInfo, ExecutionResult, TransactionInfo},
