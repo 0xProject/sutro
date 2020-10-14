@@ -2,7 +2,6 @@ mod opcode;
 pub mod precompiles;
 
 pub use opcode::Opcode;
-use std::collections::HashMap;
 use zkp_u256::U256;
 
 /// Constant for the current block

@@ -7,7 +7,7 @@ use zkp_u256::{One, Zero, U256};
 
 /// Variables during execution
 struct ExecutionState<'a> {
-    chain:       &'a mut ChainState,
+    chain:       &'a mut dyn ChainState,
     block:       &'a BlockInfo,
     transaction: &'a TransactionInfo,
     call:        &'a CallInfo,

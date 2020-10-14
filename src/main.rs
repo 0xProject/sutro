@@ -9,11 +9,9 @@ use crate::{
 };
 use chain::EthJsonRpc;
 use hex_literal::hex;
-use std::{collections::HashMap, str::FromStr};
 use tokio;
-use web3::types::{BlockId, BlockNumber, U64};
 use zkp_macros_decl::u256h;
-use zkp_u256::{One, Zero, U256};
+use zkp_u256::{Zero, U256};
 
 // Copy source to destination, padding with zeros
 // fn padded_copy(source: &[u8], destination: &[u8]) {}
@@ -24,6 +22,15 @@ struct AccountState {
     nonce:   usize,
     balance: U256,
     code:    Vec<u8>,
+}
+
+#[macro_export]
+macro_rules! require {
+    ($condition:expr, $err:expr) => {
+        if !$condition {
+            return Err($err);
+        }
+    };
 }
 
 #[tokio::main]

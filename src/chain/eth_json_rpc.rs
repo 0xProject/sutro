@@ -2,7 +2,7 @@ use super::ChainState;
 use web3::{
     block_on,
     transports::Http,
-    types::{BlockId, BlockNumber, H160, H256, U256 as W256},
+    types::{BlockNumber, H160, H256, U256 as W256},
     Error, Web3,
 };
 use zkp_u256::U256;

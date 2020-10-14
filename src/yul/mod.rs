@@ -3,6 +3,7 @@
 //! See <https://solidity.readthedocs.io/en/v0.7.3/yul.html#specification-of-yul>
 
 pub mod ast;
+mod parser;
 mod token;
 
 pub use token::Token;
