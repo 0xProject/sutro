@@ -31,12 +31,12 @@ pub enum Statement {
         code:      Vec<Statement>,
     },
     VariableDeclaration {
-        bound: Vec<String>,
-        value: Option<Expression>,
+        variables: Vec<String>,
+        value:     Option<Expression>,
     },
     Assignment {
-        variable: Vec<String>,
-        value:    Expression,
+        variables: Vec<String>,
+        value:     Expression,
     },
     If {
         condition: Expression,
