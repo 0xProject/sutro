@@ -69,7 +69,9 @@ pub enum Token {
     // Ignored syntax
     #[regex(r#"//[^\n]*"#, logos::skip)]
     LineComment,
-    #[regex(r#"/\*.*\*/"#, logos::skip)]
+    // TODO: Allow * in block comment when not followed by /
+    // See <https://stackoverflow.com/questions/16160190/regular-expression-to-find-c-style-block-comments>
+    #[regex(r#"/\*[^*]*\*/"#, logos::skip)]
     BlockComment,
     #[regex(r"[ \t\n\f]+", logos::skip)]
     Whitespace,
@@ -98,7 +100,7 @@ mod tests {
 
     #[test]
     fn lexer() {
-        let example = include_str!("example.yul");
+        let example = include_str!("erc20.yul");
         let tokens = Token::lexer(example).collect::<Vec<_>>();
         dbg!(tokens);
     }
