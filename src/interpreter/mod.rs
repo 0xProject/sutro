@@ -1,3 +1,6 @@
+//! Simple EVM interpreter
+// TODO: Error handling
+
 use crate::{
     chain::ChainState,
     evm::{precompiles::keccak256, BlockInfo, CallInfo, ExecutionResult, Opcode, TransactionInfo},
@@ -65,6 +68,43 @@ impl<'a> ExecutionState<'a> {
 
         // Dispatch opcode
         match op {
+            Opcode::Stop => todo!(),
+            Opcode::Add => self.op2(|left, right| left + right),
+            Opcode::Mul => self.op2(|left, right| left * right),
+            Opcode::Sub => self.op2(|left, right| left - right),
+            Opcode::Div => self.op2(|left, right| left / right),
+            Opcode::SDiv => todo!(), // self.op2(|left, right| ),
+            Opcode::Mod => self.op2(|left, right| left % right),
+            Opcode::SMod => todo!(),   // self.op2(|left, right| ),
+            Opcode::AddMod => todo!(), // self.op3(|left, right, modulus| ),
+            Opcode::MulMod => self.op3(|left, right, modulus| left.mulmod(&right, &modulus)),
+            Opcode::Exp => todo!(),        // self.op2(|base, exponent| ),
+            Opcode::SignExtend => todo!(), // self.op2(|value, bytes| ),
+
+            Opcode::Lt => self.op2(|left, right| left < right),
+            Opcode::Gt => self.op2(|left, right| left > right),
+            Opcode::SLt => todo!(), // self.op2(|left, right| ),
+            Opcode::SGt => todo!(), // self.op2(|left, right| ),
+            Opcode::Eq => self.op2(|left, right| left == right),
+            Opcode::IsZero => self.op1(|value| value.is_zero()),
+            Opcode::And => self.op2(|left, right| left & right),
+            Opcode::Or => self.op2(|left, right| left | right),
+            Opcode::Xor => self.op2(|left, right| left ^ right),
+            Opcode::Not => self.op1(|value| !value),
+            Opcode::Byte => todo!(),
+            // TODO: Fix truncation of large shift amounts
+            Opcode::Shl => self.op2(|shift, value| value << shift.as_usize()),
+            Opcode::Shl => self.op2(|shift, value| value >> shift.as_usize()),
+            Opcode::Sar => todo!(), // self.op2(|shift, value|),
+
+            // TODO: Fix overly large offsets/sizes
+            Opcode::Sha3 => {
+                let source = self.stack.pop().unwrap().as_usize();
+                let size = self.stack.pop().unwrap().as_usize();
+                let bytes = &self.memory[source..source + size];
+                self.stack.push(keccak256(bytes))
+            }
+
             Opcode::Push(n) => {
                 // Read payload for Push instructions
                 // TODO: Does this also zero extend?
@@ -87,87 +127,7 @@ impl<'a> ExecutionState<'a> {
                 bytes32.copy_from_slice(&self.memory[offset..offset + 32]);
                 self.stack.push(U256::from_bytes_be(&bytes32));
             }
-            Opcode::IsZero => {
-                let value = self.stack.pop().unwrap();
-                self.stack.push(if value.is_zero() {
-                    U256::one()
-                } else {
-                    U256::zero()
-                });
-            }
-            Opcode::Lt => {
-                let left = self.stack.pop().unwrap();
-                let right = self.stack.pop().unwrap();
-                self.stack.push(if left < right {
-                    U256::one()
-                } else {
-                    U256::zero()
-                });
-            }
-            Opcode::Gt => {
-                let left = self.stack.pop().unwrap();
-                let right = self.stack.pop().unwrap();
-                self.stack.push(if left > right {
-                    U256::one()
-                } else {
-                    U256::zero()
-                });
-            }
-            Opcode::Eq => {
-                let left = self.stack.pop().unwrap();
-                let right = self.stack.pop().unwrap();
-                self.stack.push(if left == right {
-                    U256::one()
-                } else {
-                    U256::zero()
-                });
-            }
-            Opcode::And => {
-                let left = self.stack.pop().unwrap();
-                let right = self.stack.pop().unwrap();
-                self.stack.push(left & right);
-            }
-            Opcode::Or => {
-                let left = self.stack.pop().unwrap();
-                let right = self.stack.pop().unwrap();
-                self.stack.push(left | right);
-            }
-            Opcode::Add => {
-                let left = self.stack.pop().unwrap();
-                let right = self.stack.pop().unwrap();
-                self.stack.push(left + right);
-            }
-            Opcode::Sub => {
-                let left = self.stack.pop().unwrap();
-                let right = self.stack.pop().unwrap();
-                self.stack.push(left - right);
-            }
-            Opcode::Mul => {
-                let left = self.stack.pop().unwrap();
-                let right = self.stack.pop().unwrap();
-                self.stack.push(left * right);
-            }
-            Opcode::Div => {
-                let left = self.stack.pop().unwrap();
-                let right = self.stack.pop().unwrap();
-                self.stack.push(left / right);
-            }
-            Opcode::Shl => {
-                let shift = self.stack.pop().unwrap().as_usize();
-                let value = self.stack.pop().unwrap();
-                self.stack.push(value << shift);
-            }
-            Opcode::Shr => {
-                let shift = self.stack.pop().unwrap().as_usize();
-                let value = self.stack.pop().unwrap();
-                self.stack.push(value >> shift);
-            }
-            Opcode::Sha3 => {
-                let source = self.stack.pop().unwrap().as_usize();
-                let size = self.stack.pop().unwrap().as_usize();
-                let bytes = &self.memory[source..source + size];
-                self.stack.push(keccak256(bytes))
-            }
+
             Opcode::Pop => {
                 self.stack.pop();
             }
@@ -291,6 +251,39 @@ impl<'a> ExecutionState<'a> {
         };
 
         None
+    }
+
+    fn op1<F, T>(&mut self, f: F)
+    where
+        F: FnOnce(U256) -> T,
+        T: Into<U256>,
+    {
+        let arg = self.stack.pop().unwrap();
+        let result = f(arg);
+        self.stack.push(result.into());
+    }
+
+    fn op2<F, T>(&mut self, f: F)
+    where
+        F: FnOnce(U256, U256) -> T,
+        T: Into<U256>,
+    {
+        let arg_0 = self.stack.pop().unwrap();
+        let arg_1 = self.stack.pop().unwrap();
+        let result = f(arg_0, arg_1);
+        self.stack.push(result.into());
+    }
+
+    fn op3<F, T>(&mut self, f: F)
+    where
+        F: FnOnce(U256, U256, U256) -> T,
+        T: Into<U256>,
+    {
+        let arg_0 = self.stack.pop().unwrap();
+        let arg_1 = self.stack.pop().unwrap();
+        let arg_3 = self.stack.pop().unwrap();
+        let result = f(arg_0, arg_1, arg_3);
+        self.stack.push(result.into());
     }
 
     /// Handle copy operations from a source array to memory
