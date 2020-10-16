@@ -1,7 +1,9 @@
 //! Simple recursive descent parser for Yul
 // TODO: Typed identifier support
+// TODO: Pass `libyul`s tests
+// See <https://github.com/ethereum/solidity/tree/develop/test/libyul/yulSyntaxTests>
 
-use super::{ast, Token};
+use super::{ast, tokenize, Token};
 use crate::require;
 use thiserror::Error;
 use zkp_u256::U256;
@@ -12,16 +14,36 @@ use zkp_u256::U256;
 pub enum Error {
     #[error("Unexpected token.")]
     UnexpectedToken,
+    #[error("String literal to large")]
+    StringToLarge,
     #[error("Unexpected end of file.")]
     UnexpectedEof,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Clone, PartialEq, Debug)]
-pub struct Tokens<'a>(&'a [Token]);
+pub fn parse_file(string: &str) -> Result<ast::SourceFile> {
+    let tokens = tokenize(string).collect::<Vec<_>>();
+    let mut parser = Parser(&tokens);
+    parser.parse_file()
+}
 
-impl<'a> Tokens<'a> {
+pub fn parse_object(string: &str) -> Result<ast::Object> {
+    let tokens = tokenize(string).collect::<Vec<_>>();
+    let mut parser = Parser(&tokens);
+    parser.parse_object()
+}
+
+pub fn parse_block(string: &str) -> Result<Vec<ast::Statement>> {
+    let tokens = tokenize(string).collect::<Vec<_>>();
+    let mut parser = Parser(&tokens);
+    parser.parse_block()
+}
+
+#[derive(Clone, PartialEq, Debug)]
+struct Parser<'a>(&'a [Token]);
+
+impl<'a> Parser<'a> {
     /// Tries a parse and rolls back on failure.
     fn try_parse<F, T>(&mut self, parser: F) -> Result<T>
     where
@@ -36,23 +58,18 @@ impl<'a> Tokens<'a> {
     }
 
     fn peek(&self) -> Result<&'a Token> {
-        dbg!(self.0.first().ok_or(Error::UnexpectedEof))
+        self.0.first().ok_or(Error::UnexpectedEof)
     }
 
     fn next(&mut self) -> Result<&'a Token> {
-        dbg!();
         let token = self.peek()?;
         self.0 = &self.0[1..];
         Ok(token)
     }
 
     fn tag(&mut self, tag: Token) -> Result<()> {
-        dbg!();
         let token = self.peek()?;
-        dbg!(&token);
-        dbg!(&tag);
         require!(token == &tag, Error::UnexpectedToken);
-        dbg!();
         self.0 = &self.0[1..];
         Ok(())
     }
@@ -60,18 +77,18 @@ impl<'a> Tokens<'a> {
     fn identifier(&mut self) -> Result<&'a String> {
         match self.next()? {
             Token::Identifier(string) => Ok(string),
-            token => Err(Error::UnexpectedToken),
+            _ => Err(Error::UnexpectedToken),
         }
     }
 
     fn literal_string(&mut self) -> Result<&'a String> {
         match self.next()? {
             Token::LiteralString(string) => Ok(string),
-            token => Err(Error::UnexpectedToken),
+            _ => Err(Error::UnexpectedToken),
         }
     }
 
-    pub fn parse_file(&mut self) -> Result<ast::SourceFile> {
+    fn parse_file(&mut self) -> Result<ast::SourceFile> {
         let mut objects = Vec::new();
         while !self.0.is_empty() {
             objects.push(self.parse_object()?);
@@ -79,7 +96,7 @@ impl<'a> Tokens<'a> {
         Ok(ast::SourceFile { objects })
     }
 
-    pub fn parse_object(&mut self) -> Result<ast::Object> {
+    fn parse_object(&mut self) -> Result<ast::Object> {
         self.tag(Token::Object)?;
         let name = self.literal_string()?.clone();
         self.tag(Token::BraceOpen)?;
@@ -87,27 +104,21 @@ impl<'a> Tokens<'a> {
         let code = self.parse_block()?;
         let mut data = Vec::new();
         while self.tag(Token::BraceClose).is_err() {
-            dbg!();
             data.push(self.parse_data()?);
         }
-        dbg!();
         Ok(ast::Object { name, code, data })
     }
 
-    pub fn parse_block(&mut self) -> Result<Vec<ast::Statement>> {
-        dbg!();
+    fn parse_block(&mut self) -> Result<Vec<ast::Statement>> {
         self.tag(Token::BraceOpen)?;
-        dbg!();
         let mut statements = Vec::new();
         while self.tag(Token::BraceClose).is_err() {
-            dbg!();
             statements.push(self.parse_statement()?);
         }
-        dbg!();
         Ok(statements)
     }
 
-    pub fn parse_statement(&mut self) -> Result<ast::Statement> {
+    fn parse_statement(&mut self) -> Result<ast::Statement> {
         Ok(match self.peek()? {
             Token::BraceOpen => {
                 ast::Statement::Block {
@@ -115,23 +126,18 @@ impl<'a> Tokens<'a> {
                 }
             }
             Token::Function => {
-                dbg!();
                 self.tag(Token::Function)?;
                 let name = self.identifier()?.clone();
-                dbg!();
                 self.tag(Token::ParenOpen)?;
-                dbg!();
-                let mut arguments = if self.tag(Token::ParenClose).is_ok() {
+                let arguments = if self.tag(Token::ParenClose).is_ok() {
                     Vec::new()
                 } else {
                     let arguments = self.parse_indentifiers()?;
                     self.tag(Token::ParenClose)?;
                     arguments
                 };
-                dbg!();
                 let mut returns = Vec::new();
                 if self.tag(Token::Returns).is_ok() {
-                    dbg!();
                     returns = self.parse_indentifiers()?;
                 }
                 let code = self.parse_block()?;
@@ -160,28 +166,19 @@ impl<'a> Tokens<'a> {
                 ast::Statement::If { condition, code }
             }
             Token::Switch => {
-                dbg!();
                 self.tag(Token::Switch)?;
                 let condition = self.parse_expression()?;
-                dbg!(&condition);
                 let mut cases = Vec::new();
                 while self.tag(Token::Case).is_ok() {
-                    dbg!();
                     let value = if let ast::Expression::Literal(value) = self.parse_expression()? {
-                        dbg!();
                         Ok(value)
                     } else {
-                        dbg!();
                         Err(Error::UnexpectedToken)
                     }?;
-                    dbg!();
                     let code = self.parse_block()?;
-                    dbg!();
                     cases.push(ast::SwitchCase::Case { value, code });
                 }
-                dbg!();
                 if self.tag(Token::Default).is_ok() {
-                    dbg!();
                     let code = self.parse_block()?;
                     cases.push(ast::SwitchCase::Default { code });
                 }
@@ -240,7 +237,7 @@ impl<'a> Tokens<'a> {
         })
     }
 
-    pub fn parse_indentifiers(&mut self) -> Result<Vec<String>> {
+    fn parse_indentifiers(&mut self) -> Result<Vec<String>> {
         let mut result = Vec::new();
         result.push(self.identifier()?.clone());
         while self.tag(Token::Comma).is_ok() {
@@ -249,10 +246,10 @@ impl<'a> Tokens<'a> {
         Ok(result)
     }
 
-    pub fn parse_data(&mut self) -> Result<ast::ObjectData> {
+    fn parse_data(&mut self) -> Result<ast::ObjectData> {
         match self.peek()? {
             Token::Data => {
-                self.tag(Token::Data);
+                self.tag(Token::Data)?;
                 let name = self.literal_string()?.clone();
                 let value = match self.next()? {
                     Token::LiteralStringHex(value) => Ok(value.clone()),
@@ -271,26 +268,21 @@ impl<'a> Tokens<'a> {
         }
     }
 
-    pub fn parse_expression(&mut self) -> Result<ast::Expression> {
-        dbg!();
+    fn parse_expression(&mut self) -> Result<ast::Expression> {
         match self.peek()? {
             Token::Literal(value) => {
-                dbg!();
                 self.tag(Token::Literal(value.clone()))?;
                 Ok(ast::Expression::Literal(value.clone()))
             }
             Token::LiteralString(_) => {
-                dbg!();
                 // Convert to bytes32
                 let value = self.literal_string()?;
                 let value = string_to_value(value)?;
                 Ok(ast::Expression::Literal(value))
             }
             Token::Identifier(_) => {
-                dbg!();
                 let name = self.identifier()?.clone();
                 if let Ok(Token::ParenOpen) = self.peek() {
-                    dbg!();
                     // Function call
                     self.tag(Token::ParenOpen)?;
                     if self.tag(Token::ParenClose).is_ok() {
@@ -310,7 +302,6 @@ impl<'a> Tokens<'a> {
                         Ok(ast::Expression::FunctionCall { name, arguments })
                     }
                 } else {
-                    dbg!();
                     // Plain identifier
                     Ok(ast::Expression::Identifier(name))
                 }
@@ -321,8 +312,11 @@ impl<'a> Tokens<'a> {
 }
 
 fn string_to_value(string: &str) -> Result<U256> {
-    // TODO
-    Ok(U256::default())
+    let utf8 = string.as_bytes();
+    require!(utf8.len() <= 32, Error::StringToLarge);
+    let mut padded = [0_u8; 32];
+    padded[0..utf8.len()].copy_from_slice(utf8);
+    Ok(U256::from_bytes_be(&padded))
 }
 
 #[cfg(test)]
@@ -334,7 +328,7 @@ mod tests {
     fn lexer() {
         let example = include_str!("erc20.yul");
         let tokens_vec = Token::lexer(example).collect::<Vec<_>>();
-        let mut tokens = Tokens(&tokens_vec.as_slice());
+        let mut tokens = Parser(&tokens_vec.as_slice());
         dbg!(tokens.parse_file().unwrap());
         // dbg!(ast);
     }

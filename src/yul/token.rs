@@ -94,6 +94,10 @@ fn hex_data(lexer: &mut Lexer<Token>) -> Result<Vec<u8>, hex::FromHexError> {
     hex::decode(slice)
 }
 
+pub fn tokenize(string: &str) -> Lexer<Token> {
+    Token::lexer(string)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
