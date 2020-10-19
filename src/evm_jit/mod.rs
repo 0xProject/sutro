@@ -1,37 +1,27 @@
 mod block;
 mod error;
 mod instruction;
-mod opcode;
 
-use crate::block::Block;
-use crate::error::Error;
-use crate::instruction::Instruction;
-use crate::opcode::Opcode;
+use crate::evm::Opcode;
+use block::Block;
 use cranelift::prelude::*;
 use cranelift_module::{DataContext, Linkage, Module};
 use cranelift_simplejit::{SimpleJITBackend, SimpleJITBuilder};
+use error::Error;
 use hex_literal::hex;
+use instruction::Instruction;
 use zkp_u256::U256;
-
-#[macro_export]
-macro_rules! require {
-    ($requirement:expr, $error:expr) => {
-        if !$requirement {
-            Err($error)?;
-        }
-    };
-}
 
 type Map<K, V> = std::collections::HashMap<K, V>;
 
 #[derive(Clone, Debug, Eq, PartialEq, Default)]
-struct Program {
-    bytecode: Vec<u8>,
-    blocks: Map<usize, Block>,
+pub struct Program {
+    pub bytecode: Vec<u8>,
+    pub blocks:   Map<usize, Block>,
 }
 
 impl Program {
-    fn from(bytecode: Vec<u8>) -> Result<Self, Error> {
+    pub fn from(bytecode: Vec<u8>) -> Result<Self, Error> {
         let mut result = Program {
             bytecode,
             blocks: Map::default(),

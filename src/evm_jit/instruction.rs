@@ -1,5 +1,5 @@
-use crate::Error;
-use crate::Opcode;
+use super::Error;
+use crate::evm::Opcode;
 use cranelift::prelude::*;
 use std::collections::HashSet;
 use zkp_u256::{Binary, Zero, U256};
@@ -44,7 +44,7 @@ impl Instruction {
             Instruction::Opcode(opcode) => Some(*opcode),
             Instruction::Push(value) => Some(Opcode::Push((1 + value.bits() / 8) as u8)),
             Instruction::Jump(_) => Some(Opcode::Jump),
-            Instruction::CondJump(_, _) => Some(Opcode::JumpI),
+            Instruction::CondJump(..) => Some(Opcode::JumpI),
             Instruction::Fallthrough(_) => None,
         }
     }
@@ -89,8 +89,8 @@ impl Instruction {
         match self {
             Instruction::Push(value) => {
                 let stack_slot = builder.create_stack_slot(StackSlotData {
-                    kind: StackSlotKind::ExplicitSlot,
-                    size: 32,
+                    kind:   StackSlotKind::ExplicitSlot,
+                    size:   32,
                     offset: None,
                 });
                 for (i, limb) in value.as_limbs().iter().enumerate() {

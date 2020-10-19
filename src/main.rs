@@ -1,6 +1,8 @@
 mod chain;
 mod evm;
+mod evm_jit;
 mod interpreter;
+mod rpc;
 mod yul;
 
 use crate::{
@@ -36,6 +38,8 @@ macro_rules! require {
 #[tokio::main]
 async fn main() -> web3::Result<()> {
     env_logger::init();
+
+    rpc::main();
 
     // Chain state
     let mut chain_state = EthJsonRpc::new().await?;
