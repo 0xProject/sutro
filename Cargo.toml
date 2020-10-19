@@ -1,7 +1,7 @@
 [package]
 name = "sutro"
 desrciption = "Eye of Sutro: Ethereum State Watcher"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["Remco Bloemen <remco@0x.org>"]
 edition = "2018"
 
@@ -11,8 +11,8 @@ cranelift-module = "0.66.0"
 cranelift-simplejit = "0.66.0"
 peg = "0.6"
 hex-literal = "0.3.1"
-zkp-u256 = { git = "https://github.com/0xProject/OpenZKP.git" }
-zkp-macros-decl = { git = "https://github.com/0xProject/OpenZKP.git" }
+zkp-u256 = "0.2.0"
+zkp-macros-decl = "0.2.0"
 thiserror = "1.0.20"
 anyhow = "1.0.32"
 ethereum = "0.3.3"
@@ -26,17 +26,3 @@ ethabi = "12.0.0"
 logos = "0.11.4"
 serde = "1.0.116"
 jsonrpc-http-server = "14.2"
-
-# Uncomment to override OpenZKP with local version.
-# [patch."https://github.com/0xProject/OpenZKP.git"]
-# zkp-criterion-utils = { path = "../OpenZKP/utils/criterion-utils" }
-# zkp-elliptic-curve = { path = "../OpenZKP/algebra/elliptic-curve" }
-# zkp-elliptic-curve-crypto = { path = "../OpenZKP/crypto/elliptic-curve-crypto" }
-# zkp-hash = { path = "../OpenZKP/crypto/hash" }
-# zkp-logging-allocator = { path = "../OpenZKP/utils/logging-allocator" }
-# zkp-macros-decl = { path = "../OpenZKP/utils/macros-decl" }
-# zkp-merkle-tree = { path = "../OpenZKP/crypto/merkle-tree" }
-# zkp-mmap-vec = { path = "../OpenZKP/utils/mmap-vec" }
-# zkp-primefield = { path = "../OpenZKP/algebra/primefield" }
-# zkp-stark = { path = "../OpenZKP/crypto/stark" }
-# zkp-u256 = { path = "../OpenZKP/algebra/u256" }
