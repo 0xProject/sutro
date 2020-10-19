@@ -5,7 +5,7 @@ mod instruction;
 use crate::evm::Opcode;
 use block::Block;
 use cranelift::prelude::*;
-use cranelift_module::{DataContext, Linkage, Module};
+use cranelift_module::{DataContext, Module};
 use cranelift_simplejit::{SimpleJITBackend, SimpleJITBuilder};
 use error::Error;
 use hex_literal::hex;

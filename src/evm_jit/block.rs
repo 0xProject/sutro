@@ -2,7 +2,7 @@ use super::{Error, Instruction, Opcode};
 use crate::require;
 use cranelift::prelude::{Block as JitBlock, *};
 use std::collections::HashSet;
-use zkp_u256::{Binary, Zero, U256};
+use zkp_u256::{Binary, U256};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Block {
@@ -76,7 +76,7 @@ impl Block {
 
     pub fn apply(&self, stack: &mut Vec<Option<U256>>) {
         for inst in &self.instructions {
-            inst.apply(stack);
+            inst.apply(stack).unwrap();
         }
     }
 
@@ -89,7 +89,7 @@ impl Block {
         }
         let last = self.instructions.last_mut().unwrap();
         Ok(match last {
-            Instruction::CondJump(branchSet, fallthrough) => {
+            Instruction::CondJump(branch_set, fallthrough) => {
                 let fallthrough = *fallthrough;
                 let branch = &stack
                     .last()
@@ -98,11 +98,11 @@ impl Block {
                     .ok_or(Error::ControlFlowEscaped)?;
                 require!(branch.bits() < 32, Error::InvalidJump);
                 let branch = branch.as_usize();
-                branchSet.insert(branch);
+                branch_set.insert(branch);
                 last.apply(&mut stack)?;
                 vec![(fallthrough, stack.clone()), (branch, stack)]
             }
-            Instruction::Jump(branchSet) => {
+            Instruction::Jump(branch_set) => {
                 let branch = stack
                     .last()
                     .ok_or(Error::StackUnderflow)?
@@ -110,7 +110,7 @@ impl Block {
                     .ok_or(Error::ControlFlowEscaped)?;
                 require!(branch.bits() < 32, Error::InvalidJump);
                 let branch = branch.as_usize();
-                branchSet.insert(branch);
+                branch_set.insert(branch);
                 last.apply(&mut stack)?;
                 vec![(branch, stack)]
             }

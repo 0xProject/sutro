@@ -2,7 +2,7 @@ use super::Error;
 use crate::evm::Opcode;
 use cranelift::prelude::*;
 use std::collections::HashSet;
-use zkp_u256::{Binary, Zero, U256};
+use zkp_u256::{Binary, U256};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Instruction {
