@@ -4,51 +4,17 @@
 //!
 //! Uses <https://github.com/paritytech/jsonrpc>
 
+mod logger;
+
 use crate::evm_jit::Program;
-use jsonrpc_core::{
-    futures::{future::Either, Future},
-    middleware, FutureResponse, MetaIoHandler, Metadata, Middleware, Params, Request, Response,
-};
+use jsonrpc_core::{MetaIoHandler, Params};
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
-use log::info;
+use log::{debug, info};
+use logger::Logger;
 use serde_json::{json, Value};
-use std::{
-    sync::atomic::{self, AtomicUsize},
-    time::Instant,
-};
-
-#[derive(Clone, Debug, Default)]
-struct Meta(usize);
-impl Metadata for Meta {}
-
-// See <https://github.com/paritytech/jsonrpc/blob/v15.1.0/core/examples/middlewares.rs>
-#[derive(Default)]
-struct Logger(AtomicUsize);
-impl Middleware<Meta> for Logger {
-    type CallFuture = middleware::NoopCallFuture;
-    type Future = FutureResponse;
-
-    fn on_request<F, X>(&self, request: Request, meta: Meta, next: F) -> Either<Self::Future, X>
-    where
-        F: FnOnce(Request, Meta) -> X + Send,
-        X: Future<Item = Option<Response>, Error = ()> + Send + 'static,
-    {
-        let start = Instant::now();
-        let request_number = self.0.fetch_add(1, atomic::Ordering::SeqCst);
-        println!(
-            "Processing request {}: {:?}, {:?}",
-            request_number, request, meta
-        );
-
-        Either::A(Box::new(next(request, meta).map(move |res| {
-            println!("Processing took: {:?}", start.elapsed());
-            res
-        })))
-    }
-}
 
 pub fn main() {
-    let mut io = MetaIoHandler::with_middleware(Logger::default());
+    let mut io = MetaIoHandler::<(), Logger>::with_middleware(Logger::default());
 
     io.add_method("say_hello", |_| Ok(json!("hello")));
     io.add_method("web3_clientVersion", |_| {
@@ -88,14 +54,14 @@ pub fn main() {
 
         let prog = Program::from(contract[0..].to_vec()).unwrap();
         for (pc, block) in &prog.blocks {
-            println!("{}: ({} gas)", pc, block.gas_cost());
-            println!("{}", block);
+            // println!("{}: ({} gas)", pc, block.gas_cost());
+            // println!("{}", block);
         }
 
         let prog = Program::from(contract[31..].to_vec()).unwrap();
         for (pc, block) in &prog.blocks {
-            println!("{}: ({} gas)", pc, block.gas_cost());
-            println!("{}", block);
+            // println!("{}: ({} gas)", pc, block.gas_cost());
+            // println!("{}", block);
         }
 
         Ok(json!("hello"))
