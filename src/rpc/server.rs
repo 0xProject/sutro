@@ -1,6 +1,6 @@
 //! Chain instance handling JSON-RPC requests.
 
-use ethereum::Transaction;
+use web3::types::CallRequest;
 
 #[derive(Clone, Default, Debug)]
 pub struct Server {}
@@ -16,7 +16,7 @@ impl Server {
 
     /// Process transaction, mine new block and return transaction hash.
     // TODO: Async processing.
-    fn transact(&mut self, transaction: Transaction) -> [u8; 32] {
+    fn transact(&mut self, transaction: CallRequest) -> [u8; 32] {
         [5; 32]
     }
 }

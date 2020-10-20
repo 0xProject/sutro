@@ -4,21 +4,14 @@
 //!
 //! Uses <https://github.com/paritytech/jsonrpc>
 
-mod hex_number;
 mod logger;
 mod server;
 
-use self::{hex_number::HexNumber, logger::Logger, server::Server};
-use crate::evm_jit::Program;
+use self::{logger::Logger, server::Server};
 use jsonrpc_core::{MetaIoHandler, Params};
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
-use log::{debug, info};
 use serde_json::{json, Value};
 use std::sync::{Arc, RwLock};
-
-fn eip_155_v(chain_id: u64) -> u64 {
-    chain_id * 2 + 35
-}
 
 pub fn main() {
     let server = Server::default();
@@ -27,7 +20,7 @@ pub fn main() {
     let mut io = MetaIoHandler::<(), Logger>::with_middleware(Logger::default());
     io.add_method("web3_clientVersion", |params: Params| {
         params.expect_no_params()?;
-        Ok(json!(format!(
+        Ok(Value::String(format!(
             "{} {}",
             env!("CARGO_PKG_NAME"),
             env!("CARGO_PKG_VERSION")
@@ -68,56 +61,13 @@ pub fn main() {
     io.add_method("eth_sendTransaction", {
         let server = server.clone();
         move |params: Params| {
-            // let (tx,) = params.parse::<(web3::types::CallRequest,)>()?;
-
-            dbg!();
+            let (mut tx,) = params.parse::<(web3::types::CallRequest,)>()?;
             let mut server = server.write().unwrap();
-            dbg!();
-
-            let obj = if let Params::Array(arr) = params {
-                arr[0].clone()
-            } else {
-                panic!()
-            };
-
-            dbg!();
-            use ethereum::{TransactionAction, TransactionSignature};
-            use ethereum_types::{H160, H256, U256};
-            use std::str::FromStr;
-
-            let chain_id = 1;
-
-            dbg!();
-            dbg!(H256::from_low_u64_be(1));
-            let tx = ethereum::Transaction {
-                action:    match obj.get("to") {
-                    Some(Value::String(address)) => {
-                        dbg!(address);
-                        // TODO: Check for "0x" prefix.
-                        TransactionAction::Call(H160::from_str(&address[2..]).unwrap())
-                    }
-                    None => TransactionAction::Create,
-                    _ => panic!("Invalid to"),
-                },
-                // TODO:
-                nonce:     U256::default(),
-                gas_limit: U256::default(),
-                gas_price: U256::default(),
-                value:     U256::default(),
-                signature: TransactionSignature::new(
-                    eip_155_v(chain_id),
-                    H256::from_low_u64_be(1),
-                    H256::from_low_u64_be(1),
-                )
-                .unwrap(),
-                input:     Vec::default(),
-            };
-            dbg!(&tx);
-            let hash = tx.message_hash(Some(chain_id));
-            dbg!(hash);
+            tx.data = None;
+            dbg!(tx);
 
             // TODO: Compute and return transaction hash.
-            Ok(Value::String(format!("{:?}", hash)))
+            Ok(Value::String(format!("{:?}", "0x")))
         }
     });
     // See <https://eth.wiki/json-rpc/API#eth_gettransactionbyhash>
