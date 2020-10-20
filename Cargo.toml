@@ -1,6 +1,6 @@
 [package]
 name = "sutro"
-desrciption = "Eye of Sutro: Ethereum State Watcher"
+description = "Eye of Sutro: Ethereum State Watcher"
 version = "0.0.1"
 authors = ["Remco Bloemen <remco@0x.org>"]
 edition = "2018"
@@ -15,7 +15,8 @@ zkp-u256 = "0.2.0"
 zkp-macros-decl = "0.2.0"
 thiserror = "1.0.20"
 anyhow = "1.0.32"
-ethereum = "0.3.3"
+ethereum = "0.4.1"
+ethereum-types = "0.9.2"
 web3 = "0.13.0"
 tokio = { version = "0.2.22", features = [ "full" ] }
 hex = "0.4.2"
