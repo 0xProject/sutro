@@ -5,7 +5,7 @@ mod instruction;
 use crate::evm::Opcode;
 use block::Block;
 use cranelift::prelude::*;
-use cranelift_module::{DataContext, Module};
+use cranelift_module::Module;
 use cranelift_simplejit::{SimpleJITBackend, SimpleJITBuilder};
 use error::Error;
 use hex_literal::hex;
@@ -30,11 +30,7 @@ impl Program {
         Ok(result)
     }
 
-    fn recover_control_flow(
-        &mut self,
-        pc: usize,
-        mut stack: Vec<Option<U256>>,
-    ) -> Result<(), Error> {
+    fn recover_control_flow(&mut self, pc: usize, stack: Vec<Option<U256>>) -> Result<(), Error> {
         // Decompile block if not done already
         if !self.blocks.contains_key(&pc) {
             let block = Block::from_pc(&self.bytecode, pc);
@@ -80,7 +76,6 @@ fn main() -> anyhow::Result<()> {
     let builder = SimpleJITBuilder::new(cranelift_module::default_libcall_names());
     let module: Module<SimpleJITBackend> = Module::new(builder);
     let mut ctx = module.make_context();
-    let data_ctx = DataContext::new();
     let mut func_ctx = FunctionBuilderContext::new();
     let mut builder = FunctionBuilder::new(&mut ctx.func, &mut func_ctx);
 
@@ -90,7 +85,7 @@ fn main() -> anyhow::Result<()> {
     let shared_flags = settings::Flags::new(shared_builder);
     let isa = cranelift::codegen::isa::lookup_by_name("x86_64")?.finish(shared_flags);
 
-    // println!("{}", builder.display(Some(isa.as_ref())));
+    println!("{}", builder.display(Some(isa.as_ref())));
 
     Ok(())
 }

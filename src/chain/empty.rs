@@ -13,19 +13,19 @@ impl ChainState for Empty {
         BlockInfo { timestamp: 0 }
     }
 
-    fn nonce(&self, address: &U256) -> usize {
+    fn nonce(&self, _address: &U256) -> usize {
         0
     }
 
-    fn balance(&self, address: &U256) -> usize {
+    fn balance(&self, _address: &U256) -> usize {
         0
     }
 
-    fn code(&self, address: &U256) -> Vec<u8> {
+    fn code(&self, _address: &U256) -> Vec<u8> {
         Vec::new()
     }
 
-    fn storage(&self, address: &U256, slot: &U256) -> U256 {
+    fn storage(&self, _address: &U256, _slot: &U256) -> U256 {
         U256::zero()
     }
 }

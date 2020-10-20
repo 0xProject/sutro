@@ -1,3 +1,6 @@
+// Be less strict during early development.
+#![allow(dead_code)]
+
 mod chain;
 mod evm;
 mod evm_jit;
@@ -66,10 +69,10 @@ async fn main() -> web3::Result<()> {
     if let ExecutionResult::Revert(result) = result {
         println!("Revert: {}", hex::encode(&result));
 
-        let param_type = ethabi::param_type::Reader::read("Error(string)").unwrap();
-
+        let _param_type = ethabi::param_type::Reader::read("Error(string)").unwrap();
+        // TODO: Decode ABI using param_type.
         let decoded = ethabi::decode(&[ethabi::ParamType::String], &result[4..]);
-        dbg!(decoded);
+        dbg!(decoded).unwrap();
     }
 
     Ok(())

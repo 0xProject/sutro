@@ -94,7 +94,7 @@ impl<'a> ExecutionState<'a> {
             Opcode::Byte => todo!(),
             // TODO: Fix truncation of large shift amounts
             Opcode::Shl => self.op2(|shift, value| value << shift.as_usize()),
-            Opcode::Shl => self.op2(|shift, value| value >> shift.as_usize()),
+            Opcode::Shr => self.op2(|shift, value| value >> shift.as_usize()),
             Opcode::Sar => todo!(), // self.op2(|shift, value|),
 
             // TODO: Fix overly large offsets/sizes

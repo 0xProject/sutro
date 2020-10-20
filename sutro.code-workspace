@@ -6,7 +6,18 @@
 	],
 	"settings": {
 		"cSpell.words": [
-			"ethabi"
+			"Cond",
+			"Decompile",
+			"SLOAD",
+			"bytecode",
+			"codegen",
+			"cranelift",
+			"ethabi",
+			"keccak",
+			"libcall",
+			"mulmod",
+			"precompiles",
+			"simplejit"
 		]
 	}
 }

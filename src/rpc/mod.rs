@@ -51,7 +51,7 @@ pub fn main() {
         let server = server.clone();
         move |params: Params| {
             params.expect_no_params()?;
-            let server = server.read().unwrap();
+            let _server = server.read().unwrap();
             Ok(Value::Array(vec![Value::String(
                 "0x407d73d8a49eeb85d32cf465507dd71d507100c1".to_string(),
             )]))
@@ -62,7 +62,7 @@ pub fn main() {
         let server = server.clone();
         move |params: Params| {
             let (mut tx,) = params.parse::<(web3::types::CallRequest,)>()?;
-            let mut server = server.write().unwrap();
+            let mut _server = server.write().unwrap();
             tx.data = None;
             dbg!(tx);
 
@@ -75,7 +75,7 @@ pub fn main() {
         let server = server.clone();
         move |params: Params| {
             let (hash,) = params.parse::<(String,)>()?;
-            let server = server.read().unwrap();
+            let _server = server.read().unwrap();
 
             // TODO: Retrieve transaction
             Ok(json!({
@@ -99,13 +99,13 @@ pub fn main() {
     // See <https://eth.wiki/json-rpc/API#eth_gettransactionreceipt>
     io.add_method("eth_getTransactionReceipt", {
         let server = server.clone();
-        move |params:Params| {
-             let (hash,) = params.parse::<(String,)>()?;
-                        let server = server.read().unwrap();
+        move |params: Params| {
+            let (hash,) = params.parse::<(String,)>()?;
+            let _server = server.read().unwrap();
 
             // TODO: Retrieve transaction receipt
             Ok(json!({
-                "transactionHash": "0x88df016429689c079f3b2f6ad39fa052532c56795b733da78a91ebe6a713944b",
+                "transactionHash": hash,
                 "transactionIndex":  "0x1", // 1
                 "blockNumber": "0xb", // 11
                 "blockHash": "0x1d59ff54b1eb26b013ce3cb5fc9dab3705b415a67127a003c3e61eb445bb8df2",
@@ -125,7 +125,7 @@ pub fn main() {
             // TODO: Support (optional) block number/tag
             let (tx,) = params.parse::<(web3::types::CallRequest,)>()?;
             dbg!(tx);
-            let server = server.read().unwrap();
+            let _server = server.read().unwrap();
 
             Ok(json!("0x5208"))
         }
@@ -135,7 +135,7 @@ pub fn main() {
         let server = server.clone();
         move |params: Params| {
             params.expect_no_params()?;
-            let server = server.read().unwrap();
+            let _server = server.read().unwrap();
 
             Ok(json!("0x1dfd14000"))
         }

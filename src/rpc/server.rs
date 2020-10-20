@@ -16,7 +16,7 @@ impl Server {
 
     /// Process transaction, mine new block and return transaction hash.
     // TODO: Async processing.
-    fn transact(&mut self, transaction: CallRequest) -> [u8; 32] {
+    fn transact(&mut self, _transaction: CallRequest) -> [u8; 32] {
         [5; 32]
     }
 }
