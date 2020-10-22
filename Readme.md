@@ -31,6 +31,7 @@ Ganache is quite slow and this prevents us from running as many tests as we woul
 
 <https://eth.wiki/json-rpc/API>
 
+* Forward RPC to Ganache and pass tests.
 * Replay a recent block of transactions.
 * Replace <https://github.com/0xProject/go-ethereum>
 * Pass all tests in <https://github.com/ethereum/tests>
