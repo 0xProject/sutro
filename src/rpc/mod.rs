@@ -61,61 +61,40 @@ pub fn main() {
     io.add_method("eth_sendTransaction", {
         let server = server.clone();
         move |params: Params| {
-            let (mut tx,) = params.parse::<(web3::types::CallRequest,)>()?;
-            let mut _server = server.write().unwrap();
-            tx.data = None;
-            dbg!(tx);
-
-            // TODO: Compute and return transaction hash.
-            Ok(Value::String(format!("{:?}", "0x")))
+            let (tx,) = params.parse::<(web3::types::TransactionRequest,)>()?;
+            let mut server = server.write().unwrap();
+            let hash = server.transact(tx);
+            Ok(json!(hash))
         }
     });
     // See <https://eth.wiki/json-rpc/API#eth_gettransactionbyhash>
     io.add_method("eth_getTransactionByHash", {
         let server = server.clone();
         move |params: Params| {
-            let (hash,) = params.parse::<(String,)>()?;
+            let (hash,) = params.parse::<(web3::types::H256,)>()?;
             let _server = server.read().unwrap();
+            dbg!(&hash);
 
             // TODO: Retrieve transaction
-            Ok(json!({
-                "blockHash":"0x1d59ff54b1eb26b013ce3cb5fc9dab3705b415a67127a003c3e61eb445bb8df2",
-                "blockNumber":"0x5daf3b", // 6139707
-                "from":"0xa7d9ddbe1f17865597fbd27ec712455208b6b76d",
-                "gas":"0xc350", // 50000
-                "gasPrice":"0x4a817c800", // 20000000000
-                "hash":hash,
-                "input":"0x68656c6c6f21",
-                "nonce":"0x15", // 21
-                "to":"0xf02c1c8e6114b1dbe8937a39260b5b0a374432bb",
-                "transactionIndex":"0x41", // 65
-                "value":"0xf3dbb76162000", // 4290000000000000
-                "v":"0x25", // 37
-                "r":"0x1b5e176d927f8e9ab405058b2d2457392da3e20f328b16ddabcebc33eaac5fea",
-                "s":"0x4ba69724e8f69de52f0125ad8b3c5c2cef33019bac3249e2c0a2192766d1721c"
-            }))
+            let mut tx = web3::types::RawTransaction::default().tx;
+            tx.hash = hash;
+            dbg!(&tx);
+
+            Ok(json!(tx))
         }
     });
     // See <https://eth.wiki/json-rpc/API#eth_gettransactionreceipt>
     io.add_method("eth_getTransactionReceipt", {
         let server = server.clone();
         move |params: Params| {
-            let (hash,) = params.parse::<(String,)>()?;
+            let (hash,) = params.parse::<(web3::types::H256,)>()?;
             let _server = server.read().unwrap();
 
             // TODO: Retrieve transaction receipt
-            Ok(json!({
-                "transactionHash": hash,
-                "transactionIndex":  "0x1", // 1
-                "blockNumber": "0xb", // 11
-                "blockHash": "0x1d59ff54b1eb26b013ce3cb5fc9dab3705b415a67127a003c3e61eb445bb8df2",
-                "cumulativeGasUsed": "0x33bc", // 13244
-                "gasUsed": "0x4dc", // 1244
-                "contractAddress": "0xb60e8dd61c5d32be8058bb8eb970870f07233155", // or null, if none was created
-                "logs": [],
-                "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", // 256 byte bloom filter
-                "status": "0x1"
-            }))
+            let mut receipt = web3::types::TransactionReceipt::default();
+            receipt.transaction_hash = hash;
+
+            Ok(json!(receipt))
         }
     });
     // See <https://eth.wiki/json-rpc/API#eth_estimategas>
