@@ -14,7 +14,7 @@ pub struct EthJsonRpc {
 
 impl EthJsonRpc {
     pub async fn new() -> Result<Self, Error> {
-        let transport = web3::transports::Http::new("http://localhost:8545")?;
+        let transport = web3::transports::Http::new("http://localhost:8555")?;
         let connection = web3::Web3::new(transport);
 
         let latest = connection.eth().block_number().await?.as_u64();

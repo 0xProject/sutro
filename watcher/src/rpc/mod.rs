@@ -8,24 +8,71 @@ mod logger;
 mod server;
 
 use self::{logger::Logger, server::Server};
-use jsonrpc_core::{MetaIoHandler, Params};
+use futures::{
+    compat::Compat,
+    future::{FutureExt, TryFutureExt},
+};
+use jsonrpc_core::{types::error::Error as RpcError, MetaIoHandler, Params, Result as RpcResult};
+use jsonrpc_derive::rpc;
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
 use serde_json::{json, Value};
-use std::sync::{Arc, RwLock};
+use std::{
+    future::Future,
+    pin::Pin,
+    sync::{Arc, RwLock},
+};
 
-pub fn main() {
-    let server = Server::default();
-    let server = Arc::new(RwLock::new(server));
+// jsonrpc uses an ancient version of futures that needs a workaround.
+// See <https://github.com/paritytech/jsonrpc/issues/485>
+pub type BoxFuture<T> = Compat<Pin<Box<dyn Future<Output = RpcResult<T>> + Send>>>;
 
-    let mut io = MetaIoHandler::<(), Logger>::with_middleware(Logger::default());
-    io.add_method("web3_clientVersion", |params: Params| {
-        params.expect_no_params()?;
-        Ok(Value::String(format!(
+#[rpc(server)]
+pub trait EthereumJsonRpc {
+    #[rpc(name = "web3_clientVersion")]
+    fn client_version(&self) -> RpcResult<String>;
+
+    #[rpc(name = "eth_sendTransaction")]
+    fn send_transaction(&self, tx: web3::types::TransactionRequest)
+        -> BoxFuture<web3::types::H256>;
+}
+
+struct EJRServer {
+    server: Arc<RwLock<Server>>,
+}
+
+impl EthereumJsonRpc for EJRServer {
+    fn client_version(&self) -> RpcResult<String> {
+        Ok(format!(
             "{} {}",
             env!("CARGO_PKG_NAME"),
             env!("CARGO_PKG_VERSION")
-        )))
-    });
+        ))
+    }
+
+    fn send_transaction(
+        &self,
+        tx: web3::types::TransactionRequest,
+    ) -> BoxFuture<web3::types::H256> {
+        let future = async move {
+            let server = self.server.write().unwrap();
+            let result = server.transact(tx).await;
+            Ok(result)
+        };
+        future.boxed().compat()
+    }
+}
+
+pub fn main() {
+    let server = Server::new();
+    let server = Arc::new(RwLock::new(server));
+
+    let mut io = MetaIoHandler::<(), Logger>::with_middleware(Logger::default());
+
+    let ejrs = EJRServer {
+        server: server.clone(),
+    };
+    io.extend_with(ejrs.to_delegate());
+
     // See <https://eth.wiki/json-rpc/API#net_version>
     io.add_method("net_version", {
         let server = server.clone();
@@ -58,15 +105,18 @@ pub fn main() {
         }
     });
     // See <https://eth.wiki/json-rpc/API#eth_sendtransaction>
-    io.add_method("eth_sendTransaction", {
-        let server = server.clone();
-        move |params: Params| {
-            let (tx,) = params.parse::<(web3::types::TransactionRequest,)>()?;
-            let mut server = server.write().unwrap();
-            let hash = server.transact(tx);
-            Ok(json!(hash))
-        }
-    });
+    // io.add_method("eth_sendTransaction", {
+    //     let server = server.clone();
+    //     move |params: Params| {
+    //         let future = async move {
+    //             let (tx,) =
+    // params.parse::<(web3::types::TransactionRequest,)>()?;             let
+    // mut server = server.write().unwrap();             let hash =
+    // server.transact(tx).await;             Ok(json!(hash))
+    //         };
+    //         Box::new(future.boxed().compat())
+    //     }
+    // });
     // See <https://eth.wiki/json-rpc/API#eth_gettransactionbyhash>
     io.add_method("eth_getTransactionByHash", {
         let server = server.clone();
