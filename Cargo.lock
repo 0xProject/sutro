@@ -1042,7 +1042,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9fc79f4a1e39857fc00c3f662cbf2651c771f00e9c15fe2abc341806bd46bd71"
 
 [[package]]
-name = "yul"
+name = "yul-language-server"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "flexi_logger",
+ "log",
+ "lsp-server",
+ "lsp-types",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "yul-parser"
 version = "0.0.1"
 dependencies = [
  "criterion",
@@ -1056,19 +1069,6 @@ dependencies = [
  "serde_json",
  "thiserror",
  "zkp-u256",
-]
-
-[[package]]
-name = "yul-language-server"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "flexi_logger",
- "log",
- "lsp-server",
- "lsp-types",
- "serde",
- "serde_json",
 ]
 
 [[package]]

@@ -262,9 +262,28 @@ mod tests {
     #[test]
     fn parse_example() {
         let input = include_str!("../test/example.yul");
-        let mut parser = Parser::new(Node::File, input);
+        let mut parser = Parser::new(input);
         parse_file(&mut parser);
         let parse = parser.finish();
-        dbg!(parse);
+        assert_eq!(
+            format!("{:#?}", &parse),
+            include_str!("../test/example.parse.txt")
+        );
+        let unparse = parse.unparse();
+        assert_eq!(input, unparse);
+    }
+
+    #[test]
+    fn parse_erc20() {
+        let input = include_str!("../test/erc20.yul");
+        let mut parser = Parser::new(input);
+        parse_file(&mut parser);
+        let parse = parser.finish();
+        assert_eq!(
+            format!("{:#?}", &parse),
+            include_str!("../test/erc20.parse.txt")
+        );
+        let unparse = parse.unparse();
+        assert_eq!(input, unparse);
     }
 }

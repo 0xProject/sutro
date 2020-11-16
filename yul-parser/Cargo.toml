@@ -1,6 +1,6 @@
 [package]
-name = "yul"
-description = "Yul language library"
+name = "yul-parser"
+description = "Yul language parser"
 version = "0.0.1"
 authors = ["Remco Bloemen <remco@0x.org>"]
 repository = "https://github.com/0xProject/sutro"

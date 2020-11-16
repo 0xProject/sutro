@@ -1,6 +1,6 @@
 use criterion::{black_box, Criterion};
 use logos::Logos;
-use yul::{parse, Lexer, Token};
+use yul_parser::{parse, Lexer, Token};
 
 fn bench_source(c: &mut Criterion, name: &str, input: &str) {
     c.bench_function(&format!("logos {}", name), |b| {

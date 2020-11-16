@@ -1,5 +1,5 @@
 [workspace]
 members = [
-    "yul",
+    "yul-parser",
     "yul-language-server",
 ]

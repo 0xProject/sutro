@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive, Serialize, Deserialize)]
 pub enum Node {
+    Root,
     File,
     Object,
     Code,
@@ -30,6 +31,10 @@ pub enum Node {
 }
 
 impl Node {
+    pub fn root() -> Self {
+        Node::Root
+    }
+
     pub fn error() -> Self {
         Node::Error
     }

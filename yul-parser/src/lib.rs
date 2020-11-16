@@ -24,7 +24,7 @@ pub use syntax_kind::{SyntaxKind, SyntaxNode, YulLanguage};
 pub use token::Token;
 
 pub fn parse(input: &str) -> Parse {
-    let mut parser = Parser::new(Node::File, input);
+    let mut parser = Parser::new(input);
     syntax::parse_file(&mut parser);
     parser.finish()
 }

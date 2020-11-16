@@ -1,5 +1,5 @@
 use crate::SyntaxNode;
-use rowan::GreenNode;
+use rowan::{GreenNode, NodeOrToken};
 
 #[derive(Clone)]
 pub struct Parse {
@@ -13,6 +13,13 @@ impl Parse {
 
     pub fn syntax_node(&self) -> SyntaxNode {
         SyntaxNode::new_root(self.green_node.clone())
+    }
+
+    /// Recover source code from syntax tree.
+    pub fn unparse(&self) -> String {
+        let mut result = String::with_capacity(self.green_node.text_len().into());
+        unparse_recurse(&mut result, &self.green_node);
+        result
     }
 
     pub fn debug_tree(&self) -> String {
@@ -34,5 +41,14 @@ impl serde::Serialize for Parse {
         S: serde::Serializer,
     {
         self.syntax_node().serialize(serializer)
+    }
+}
+
+fn unparse_recurse(result: &mut String, node: &GreenNode) {
+    for child in node.children() {
+        match child {
+            NodeOrToken::Node(node) => unparse_recurse(result, node),
+            NodeOrToken::Token(token) => result.push_str(token.text().as_str()),
+        }
     }
 }

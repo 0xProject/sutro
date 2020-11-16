@@ -9,12 +9,12 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
-    pub fn new(root: Node, input: &'a str) -> Self {
+    pub fn new(input: &'a str) -> Self {
         let mut parser = Self {
             lexer:   Lexer::new(input).peekable(),
             builder: GreenNodeBuilder::new(),
         };
-        parser.start_node(root);
+        parser.start_node(Node::root());
         parser
     }
 
@@ -124,20 +124,20 @@ mod tests {
 
     #[test]
     fn parse_nothing() {
-        let parser = Parser::new(Node::File, "");
+        let parser = Parser::new("");
         let parse = parser.finish();
-        assert_eq!(parse.debug_tree(), "File@0..0");
+        assert_eq!(parse.debug_tree(), "Root@0..0");
     }
 
     #[test]
     fn parse_number() {
-        let mut parser = Parser::new(Node::File, "123");
+        let mut parser = Parser::new("123");
         parser.token(Token::LiteralInt);
         let parse = parser.finish();
         assert_eq!(
             serde_json::to_value(&parse).unwrap(),
             json!({
-                "kind": "File",
+                "kind": "Root",
                 "text_range": [0, 3],
                 "children": [{
                     "kind": "LiteralInt",
