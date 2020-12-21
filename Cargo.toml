@@ -27,7 +27,7 @@ required-features = ["bench"]
 [dependencies]
 anyhow = "1.0"
 criterion = { version = "0.3", optional = true }
-futures = { version = "0.3", features = ["compat"] }
+futures = "0.3"
 hex = "0.4"
 hex-literal = "0.3"
 hyper = "0.13"
@@ -52,9 +52,10 @@ tracing-timing = "0.4"
 cranelift = "0.68"
 cranelift-module = "0.68"
 cranelift-simplejit = "0.68"
-jsonrpc-core = "15.0"
-jsonrpc-derive = "15.0"
-jsonrpc-http-server = "15.0"
+humantime = "2.0"
+jsonrpc-core = "16.0"
+jsonrpc-derive = "16.0"
+jsonrpc-http-server = "16.0"
 rlp = "0.4"
 serde_json = "1.0"
 tiny-keccak = "2.0"

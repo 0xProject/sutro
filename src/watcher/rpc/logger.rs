@@ -1,8 +1,9 @@
 //! Middleware to log requests and processing times.
 
 use crate::prelude::*;
+use futures::future::Either;
+use humantime::Duration as HumanDuration;
 use jsonrpc_core::{
-    futures::{future::Either, Future},
     middleware,
     types::request::{Call, Request},
     FutureResponse, Metadata, Middleware, Response,
@@ -23,19 +24,19 @@ impl<M: Metadata> Middleware<M> for Logger {
     fn on_request<F, X>(&self, request: Request, meta: M, next: F) -> Either<Self::Future, X>
     where
         F: FnOnce(Request, M) -> X + Send,
-        X: Future<Item = Option<Response>, Error = ()> + Send + 'static,
+        X: Future<Output = Option<Response>> + Send + 'static,
     {
         let start = Instant::now();
         let request_number = self.0.fetch_add(1, atomic::Ordering::SeqCst);
         let request_method = format_request(&request);
         debug!("Processing request {}: {}", request_number, request_method);
 
-        Either::A(Box::new(next(request, meta).map(move |res| {
+        Either::Left(Box::pin(next(request, meta).map(move |res| {
             info!(
                 "Request {}: {} took {:?}",
                 request_number,
                 request_method,
-                start.elapsed()
+                HumanDuration::from(start.elapsed())
             );
             res
         })))

@@ -8,20 +8,12 @@ mod logger;
 mod server;
 
 use self::{logger::Logger, server::Server};
-use futures::compat::Compat;
-use jsonrpc_core::{MetaIoHandler, Params, Result as RpcResult};
+use crate::prelude::*;
+use jsonrpc_core::{BoxFuture, MetaIoHandler, Params, Result as RpcResult};
 use jsonrpc_derive::rpc;
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
 use serde_json::{json, Value};
-use std::{
-    future::Future,
-    pin::Pin,
-    sync::{Arc, RwLock},
-};
-
-// jsonrpc uses an ancient version of futures that needs a workaround.
-// See <https://github.com/paritytech/jsonrpc/issues/485>
-pub type BoxFuture<T> = Compat<Pin<Box<dyn Future<Output = RpcResult<T>> + Send>>>;
+use std::sync::{Arc, RwLock};
 
 #[rpc(server)]
 pub trait EthereumJsonRpc {
@@ -29,8 +21,10 @@ pub trait EthereumJsonRpc {
     fn client_version(&self) -> RpcResult<String>;
 
     #[rpc(name = "eth_sendTransaction")]
-    fn send_transaction(&self, tx: web3::types::TransactionRequest)
-        -> BoxFuture<web3::types::H256>;
+    fn send_transaction(
+        &self,
+        tx: web3::types::TransactionRequest,
+    ) -> BoxFuture<RpcResult<web3::types::H256>>;
 }
 
 struct EJRServer {
@@ -49,7 +43,8 @@ impl EthereumJsonRpc for EJRServer {
     fn send_transaction(
         &self,
         tx: web3::types::TransactionRequest,
-    ) -> BoxFuture<web3::types::H256> {
+    ) -> BoxFuture<RpcResult<web3::types::H256>> {
+        debug!("Sending transaction {:?}", &tx);
         let _future = async move {
             let mut server = self.server.write().unwrap();
             let result = server.transact(tx).await;
@@ -75,31 +70,40 @@ pub fn main() {
     io.add_method("net_version", {
         let server = server.clone();
         move |params: Params| {
-            params.expect_no_params()?;
-            let server = server.read().unwrap();
-            let chain_id = server.chain_id();
-            // Value is returned as decimal string
-            Ok(Value::String(format!("{}", chain_id)))
+            let server = server.clone();
+            async move {
+                params.expect_no_params()?;
+                let server = server.read().unwrap();
+                let chain_id = server.chain_id();
+                // Value is returned as decimal string
+                Ok(Value::String(format!("{}", chain_id)))
+            }
         }
     });
     // See <https://eth.wiki/json-rpc/API#eth_blocknumber>
     io.add_method("eth_blockNumber", {
         let server = server.clone();
         move |params: Params| {
-            params.expect_no_params()?;
-            let server = server.read().unwrap();
-            Ok(Value::String(format!("0x{:x}", server.block_number())))
+            let server = server.clone();
+            async move {
+                params.expect_no_params()?;
+                let server = server.read().unwrap();
+                Ok(Value::String(format!("0x{:x}", server.block_number())))
+            }
         }
     });
     // TODO: Generate key pairs
     io.add_method("eth_accounts", {
         let server = server.clone();
         move |params: Params| {
-            params.expect_no_params()?;
-            let _server = server.read().unwrap();
-            Ok(Value::Array(vec![Value::String(
-                "0x407d73d8a49eeb85d32cf465507dd71d507100c1".to_string(),
-            )]))
+            let server = server.clone();
+            async move {
+                params.expect_no_params()?;
+                let _server = server.read().unwrap();
+                Ok(Value::Array(vec![Value::String(
+                    "0x407d73d8a49eeb85d32cf465507dd71d507100c1".to_string(),
+                )]))
+            }
         }
     });
     // See <https://eth.wiki/json-rpc/API#eth_sendtransaction>
@@ -119,52 +123,64 @@ pub fn main() {
     io.add_method("eth_getTransactionByHash", {
         let server = server.clone();
         move |params: Params| {
-            let (hash,) = params.parse::<(web3::types::H256,)>()?;
-            let _server = server.read().unwrap();
-            dbg!(&hash);
+            let server = server.clone();
+            async move {
+                let (hash,) = params.parse::<(web3::types::H256,)>()?;
+                let _server = server.read().unwrap();
+                dbg!(&hash);
 
-            // TODO: Retrieve transaction
-            let mut tx = web3::types::RawTransaction::default().tx;
-            tx.hash = hash;
-            dbg!(&tx);
+                // TODO: Retrieve transaction
+                let mut tx = web3::types::RawTransaction::default().tx;
+                tx.hash = hash;
+                dbg!(&tx);
 
-            Ok(json!(tx))
+                Ok(json!(tx))
+            }
         }
     });
     // See <https://eth.wiki/json-rpc/API#eth_gettransactionreceipt>
     io.add_method("eth_getTransactionReceipt", {
         let server = server.clone();
         move |params: Params| {
-            let (hash,) = params.parse::<(web3::types::H256,)>()?;
-            let _server = server.read().unwrap();
+            let server = server.clone();
+            async move {
+                let (hash,) = params.parse::<(web3::types::H256,)>()?;
+                let _server = server.read().unwrap();
 
-            // TODO: Retrieve transaction receipt
-            let mut receipt = web3::types::TransactionReceipt::default();
-            receipt.transaction_hash = hash;
+                // TODO: Retrieve transaction receipt
+                let mut receipt = web3::types::TransactionReceipt::default();
+                receipt.transaction_hash = hash;
 
-            Ok(json!(receipt))
+                Ok(json!(receipt))
+            }
         }
     });
     // See <https://eth.wiki/json-rpc/API#eth_estimategas>
     io.add_method("eth_estimateGas", {
         let server = server.clone();
         move |params: Params| {
-            // TODO: Support (optional) block number/tag
-            let (tx,) = params.parse::<(web3::types::CallRequest,)>()?;
-            dbg!(tx);
-            let _server = server.read().unwrap();
+            let server = server.clone();
+            async move {
+                // TODO: Support (optional) block number/tag
+                let (tx,) = params.parse::<(web3::types::CallRequest,)>()?;
+                dbg!(tx);
+                let _server = server.read().unwrap();
 
-            Ok(json!("0x5208"))
+                Ok(json!("0x5208"))
+            }
         }
     });
     // See <https://eth.wiki/json-rpc/API#eth_gasprice>
     io.add_method("eth_gasPrice", {
         let server = server.clone();
         move |params: Params| {
-            params.expect_no_params()?;
-            let _server = server.read().unwrap();
+            let server = server.clone();
+            async move {
+                params.expect_no_params()?;
+                let _server = server.read().unwrap();
 
-            Ok(json!("0x1dfd14000"))
+                Ok(json!("0x1dfd14000"))
+            }
         }
     });
 
