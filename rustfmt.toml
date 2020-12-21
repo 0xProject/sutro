@@ -1,12 +1,8 @@
-# Facebook Libra's defaults
+# See: https://github.com/rust-lang/rustfmt/blob/master/Configurations.md
 edition = "2018"
-#comment_width = 100
 merge_imports = true
 use_field_init_shorthand = true
 wrap_comments = true
-
-# More optional lints
-# See: https://github.com/rust-lang/rustfmt/blob/master/Configurations.md
 comment_width = 80
 struct_field_align_threshold = 20
 enum_discrim_align_threshold = 20

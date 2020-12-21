@@ -1,9 +1,10 @@
 # Eye of Sutro: Ethereum State Watcher
 
-[![Crates.io](https://img.shields.io/crates/l/sutro)](/License.md)
-[![Docs.rs](https://docs.rs/sutro/badge.svg)](https://docs.rs/zkp-stark)
-[![CircleCI](https://img.shields.io/circleci/build/github/0xProject/sutro)](https://circleci.com/gh/0xProject/OpenZKP)
-[![Codecov](https://img.shields.io/codecov/c/gh/0xproject/sutro)](https://codecov.io/gh/0xProject/OpenZKP)
+![lines of code](https://img.shields.io/tokei/lines/github/0xProject/sutro)
+[![docs.rs](https://docs.rs/sutro/badge.svg)](https://docs.rs/sutro)
+[![dependency status](https://deps.rs/repo/github/0xProject/sutro/status.svg)](https://deps.rs/repo/github/0xProject/sutro)
+[![codecov](https://img.shields.io/codecov/c/github/0xProject/sutro)](https://codecov.io/gh/0xProject/sutro)
+[![build](https://img.shields.io/github/workflow/status/0xProject/sutro/build)](https://github.com/0xProject/sutro/actions?query=workflow%3Abuild)
 
 <img src="eye_of_sutro.jpg" width="33%" align="right" style="padding-left: 20px"></img>
 
@@ -41,7 +42,6 @@ Debugging:
 
 * Bytes4 decode any call / return value.
 * Parse Solidity sourcemaps.
-
 
 ```
 clear; RUST_LOG="trace,tokio=info,hyper=info,mio=info" cargo run

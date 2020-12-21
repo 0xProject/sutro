@@ -1,23 +1,7 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"cSpell.words": [
-			"Cond",
-			"Decompile",
-			"SLOAD",
-			"bytecode",
-			"codegen",
-			"cranelift",
-			"ethabi",
-			"keccak",
-			"libcall",
-			"mulmod",
-			"precompiles",
-			"simplejit"
-		]
-	}
+    "folders": [
+        {
+            "path": "."
+        }
+    ]
 }
