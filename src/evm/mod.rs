@@ -1,3 +1,5 @@
+mod interpreter;
+mod jit;
 mod opcode;
 pub mod precompiles;
 

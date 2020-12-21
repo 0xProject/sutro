@@ -8,11 +8,8 @@ mod logger;
 mod server;
 
 use self::{logger::Logger, server::Server};
-use futures::{
-    compat::Compat,
-    future::{FutureExt, TryFutureExt},
-};
-use jsonrpc_core::{types::error::Error as RpcError, MetaIoHandler, Params, Result as RpcResult};
+use futures::compat::Compat;
+use jsonrpc_core::{MetaIoHandler, Params, Result as RpcResult};
 use jsonrpc_derive::rpc;
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, ServerBuilder};
 use serde_json::{json, Value};
@@ -53,12 +50,13 @@ impl EthereumJsonRpc for EJRServer {
         &self,
         tx: web3::types::TransactionRequest,
     ) -> BoxFuture<web3::types::H256> {
-        let future = async move {
-            let server = self.server.write().unwrap();
+        let _future = async move {
+            let mut server = self.server.write().unwrap();
             let result = server.transact(tx).await;
-            Ok(result)
+            result
         };
-        future.boxed().compat()
+        // TODO: future.boxed().compat()
+        todo!()
     }
 }
 

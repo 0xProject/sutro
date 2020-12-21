@@ -6,7 +6,7 @@ use crate::evm::Opcode;
 use block::Block;
 use cranelift::prelude::*;
 use cranelift_module::Module;
-use cranelift_simplejit::{SimpleJITBackend, SimpleJITBuilder};
+use cranelift_simplejit::{SimpleJITBuilder, SimpleJITModule};
 use error::Error;
 use hex_literal::hex;
 use instruction::Instruction;
@@ -74,7 +74,7 @@ fn main() -> anyhow::Result<()> {
     }
 
     let builder = SimpleJITBuilder::new(cranelift_module::default_libcall_names());
-    let module: Module<SimpleJITBackend> = Module::new(builder);
+    let module = SimpleJITModule::new(builder);
     let mut ctx = module.make_context();
     let mut func_ctx = FunctionBuilderContext::new();
     let mut builder = FunctionBuilder::new(&mut ctx.func, &mut func_ctx);

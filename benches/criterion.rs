@@ -1,5 +1,5 @@
 use criterion::Criterion;
-use rust_app_template::bench;
+use sutro::bench;
 
 fn main() {
     let mut criterion = Criterion::default().configure_from_args();

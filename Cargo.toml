@@ -1,13 +1,16 @@
 [package]
 name = "sutro"
-version = "0.1.0"
+version = "0.0.2"
 authors = ["Remco Bloemen <remco@0x.org>"]
 edition = "2018"
 build = "build.rs"
 homepage = "https://github.com/0xProject/sutro"
 repository = "https://github.com/0xProject/sutro"
 description = "Eye of Sutro: Ethereum State Watcher"
+categories = ["cryptography::cryptocurrencies"]
+keywords = ["ethereum", "monitoring"]
 readme = "Readme.md"
+license = "MIT"
 
 [features]
 features = [ "bench" ]
@@ -24,7 +27,9 @@ required-features = ["bench"]
 [dependencies]
 anyhow = "1.0"
 criterion = { version = "0.3", optional = true }
-futures = "0.3"
+futures = { version = "0.3", features = ["compat"] }
+hex = "0.4"
+hex-literal = "0.3"
 hyper = "0.13"
 itertools = "0.9"
 num_cpus = "1.13"
@@ -44,9 +49,21 @@ tracing-subscriber = "0.2"
 tracing-test = "0.1"
 tracing-timing = "0.4"
 
+cranelift = "0.68"
+cranelift-module = "0.68"
+cranelift-simplejit = "0.68"
+jsonrpc-core = "15.0"
+jsonrpc-derive = "15.0"
+jsonrpc-http-server = "15.0"
+rlp = "0.4"
+serde_json = "1.0"
+tiny-keccak = "2.0"
+web3 = "0.14"
+zkp-u256 = "0.2"
+
+
 [dev-dependencies]
 criterion = "0.3"
-float_eq = "0.5"
 pretty_assertions = "0.6"
 proptest = "0.10"
 

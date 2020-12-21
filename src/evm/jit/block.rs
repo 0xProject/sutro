@@ -1,8 +1,7 @@
 use super::{Error, Instruction, Opcode};
-use crate::require;
+use crate::prelude::*;
 use cranelift::prelude::{Block as JitBlock, *};
 use std::collections::HashSet;
-use zkp_u256::{Binary, U256};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Block {

@@ -1,10 +1,18 @@
 #![warn(clippy::all, clippy::pedantic, clippy::cargo, clippy::nursery)]
+#![allow(clippy::multiple_crate_versions)]
+// TODO
+#![allow(clippy::missing_errors_doc)]
+#![allow(dead_code)]
 
+mod evm;
 mod server;
+mod watcher;
 
 pub mod prelude {
+    pub use crate::require;
     pub use anyhow::{Context as _, Result};
     pub use futures::prelude::*;
+    pub use hex_literal::hex;
     pub use itertools::Itertools as _;
     pub use rand::prelude::*;
     pub use rayon::prelude::*;
@@ -12,17 +20,24 @@ pub mod prelude {
     pub use thiserror::Error;
     pub use tokio::prelude::*;
     pub use tracing::{debug, error, info, trace, warn};
+    pub use zkp_u256::{Binary as _, One as _, Pow as _, Zero as _, U256};
 }
 
 use crate::prelude::*;
 use once_cell::sync::OnceCell;
 use rand_pcg::Mcg128Xsl64;
-use std::{
-    iter::once,
-    sync::{Mutex, MutexGuard},
-};
+use std::sync::{Mutex, MutexGuard};
 use structopt::StructOpt;
 use tracing_subscriber::FmtSubscriber;
+
+#[macro_export]
+macro_rules! require {
+    ($condition:expr, $err:expr) => {
+        if !$condition {
+            return Err($err.into());
+        }
+    };
+}
 
 #[derive(Debug, PartialEq, StructOpt)]
 struct Options {
@@ -61,6 +76,7 @@ pub fn rng() -> MutexGuard<'static, Mcg128Xsl64> {
     mutex.lock().expect("RNG mutex poisoned")
 }
 
+#[must_use]
 pub fn random<T>() -> T
 where
     rand::distributions::Standard: rand::distributions::Distribution<T>,
@@ -68,6 +84,7 @@ where
     rng().gen()
 }
 
+#[allow(clippy::cognitive_complexity)]
 pub fn main() -> Result<()> {
     // Parse CLI and handle help and version (which will stop the application).
     #[rustfmt::skip]
@@ -153,7 +170,6 @@ pub fn main() -> Result<()> {
 #[cfg(test)]
 pub mod test {
     pub mod prelude {
-        pub use float_eq::assert_float_eq;
         pub use pretty_assertions::{assert_eq, assert_ne};
         pub use proptest::prelude::*;
         pub use tracing_test::traced_test;
@@ -168,18 +184,10 @@ pub mod test {
         let options = Options::from_iter_safe(cmd.split(' ')).unwrap();
         assert_eq!(options, Options {
             verbose: 4,
-            seed:    Some(0xd5c7b134723a63bf),
+            seed:    Some(0xd5c7_b134_723a_63bf),
             threads: Some(5),
             command: None,
         });
-    }
-
-    #[test]
-    fn add_commutative() {
-        proptest!(|(a in 0.0..1.0, b in 0.0..1.0)| {
-            let first: f64 = a + b;
-            assert_float_eq!(first, b + a, ulps <= 0);
-        })
     }
 
     #[test]
@@ -216,11 +224,12 @@ pub mod bench {
         pub use futures::executor::block_on;
     }
 
+    #[allow(clippy::wildcard_imports)]
     use super::*;
     use crate::bench::prelude::*;
 
     #[cfg(feature = "bench")]
-    pub fn main(c: &mut criterion::Criterion) {
+    pub fn main(c: &mut Criterion) {
         server::bench::group(c);
     }
 }

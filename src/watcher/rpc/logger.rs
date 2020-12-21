@@ -1,12 +1,12 @@
 //! Middleware to log requests and processing times.
 
+use crate::prelude::*;
 use jsonrpc_core::{
     futures::{future::Either, Future},
     middleware,
     types::request::{Call, Request},
     FutureResponse, Metadata, Middleware, Response,
 };
-use log::{debug, info};
 use std::{
     sync::atomic::{self, AtomicUsize},
     time::Instant,

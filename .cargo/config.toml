@@ -1,5 +1,6 @@
 [alias]
 criterion = "bench --bench=criterion --features=bench"
+lint = "clippy --all-features --all-targets" 
 
 # Build speed hacks
 # Source: <https://github.com/bevyengine/bevy/blob/master/.cargo/config_fast_builds>

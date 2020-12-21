@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 use tiny_keccak::{Hasher, Keccak};
-use web3::types::{CallRequest, Transaction, TransactionRequest, H256};
+use web3::types::{Transaction, TransactionRequest, H256};
 
 #[derive(Clone, Debug)]
 pub struct Server {

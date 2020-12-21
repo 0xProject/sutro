@@ -4,7 +4,7 @@ use hyper::{
     Body, Request, Response, Server,
 };
 use std::{convert::Infallible, net::SocketAddr};
-use tokio_compat_02::FutureExt as _;
+use tokio_compat_02::FutureExt as TokioCompat;
 
 async fn hello_world(_req: Request<Body>) -> std::result::Result<Response<Body>, Infallible> {
     Ok(Response::new("Hello, World!\n".into()))
@@ -12,6 +12,7 @@ async fn hello_world(_req: Request<Body>) -> std::result::Result<Response<Body>,
 
 // Start server in separate function so we can call it with
 // `tokio_compat_02::FutureExt::compat` since it uses Tokio 0.2.
+#[allow(clippy::future_not_send)]
 async fn start_server<F>(socket_addr: &SocketAddr, stop_signal: F) -> Result<()>
 where
     F: Future<Output = ()>,
@@ -37,7 +38,7 @@ pub async fn async_main() -> Result<()> {
 
     // List on all interfaces on port 8080
     let socket_addr = SocketAddr::from(([0, 0, 0, 0], 8080));
-    start_server(&socket_addr, stop_signal).compat().await?;
+    TokioCompat::compat(start_server(&socket_addr, stop_signal)).await?;
 
     Ok(())
 }
@@ -45,11 +46,8 @@ pub async fn async_main() -> Result<()> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::test::prelude::{assert_eq, *};
-    use hyper::{
-        body::{to_bytes, HttpBody},
-        Request,
-    };
+    use crate::test::prelude::assert_eq;
+    use hyper::{body::to_bytes, Request};
 
     #[tokio::test]
     async fn test_hello_world() {
@@ -60,12 +58,13 @@ mod test {
     }
 }
 #[cfg(feature = "bench")]
-pub(crate) mod bench {
+pub(super) mod bench {
+    #[allow(clippy::wildcard_imports)]
     use super::*;
     use crate::bench::prelude::*;
     use hyper::body::to_bytes;
 
-    pub(crate) fn group(c: &mut Criterion) {
+    pub(in super::super) fn group(c: &mut Criterion) {
         bench_hello_world(c);
     }
 

@@ -2,11 +2,10 @@
 // TODO: Error handling
 
 use crate::{
-    chain::ChainState,
     evm::{precompiles::keccak256, BlockInfo, CallInfo, ExecutionResult, Opcode, TransactionInfo},
+    prelude::*,
+    watcher::chain::ChainState,
 };
-use log::info;
-use zkp_u256::{One, Zero, U256};
 
 /// Variables during execution
 struct ExecutionState<'a> {
