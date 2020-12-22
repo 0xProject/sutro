@@ -1,5 +1,5 @@
-use super::ChainState;
-use crate::{evm::BlockInfo, prelude::*};
+use super::{BlockInfo, ChainState};
+use crate::prelude::*;
 use web3::{
     block_on,
     types::{BlockId, BlockNumber, H160, U256 as W256},

@@ -2,27 +2,18 @@
 //!
 //! Chain with no state.
 
-use super::ChainState;
-use crate::evm::BlockInfo;
-use zkp_u256::{Zero, U256};
+use super::{BlockInfo, ChainState};
+use crate::prelude::*;
 
 /// An empty chain state with a given block header
 ///
 /// All balances, nonces and storage is zero, there is no contract code.
 #[derive(Clone, Default, Debug)]
-pub struct Empty {
-    block: BlockInfo,
-}
-
-impl From<BlockInfo> for Empty {
-    fn from(block: BlockInfo) -> Self {
-        Self { block }
-    }
-}
+pub struct Empty;
 
 impl ChainState for Empty {
     fn block(&self) -> BlockInfo {
-        self.block.clone()
+        BlockInfo::default()
     }
 
     fn nonce(&self, _address: &U256) -> usize {

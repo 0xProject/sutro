@@ -2,8 +2,8 @@
 // TODO: Error handling
 
 use crate::{
-    chain::ChainState,
-    evm::{precompiles::keccak256, BlockInfo, CallInfo, ExecutionResult, Opcode, TransactionInfo},
+    chain::{BlockInfo, ChainState},
+    evm::{precompiles::keccak256, CallInfo, ExecutionResult, Opcode, TransactionInfo},
     prelude::*,
 };
 

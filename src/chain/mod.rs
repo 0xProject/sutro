@@ -4,12 +4,21 @@ mod cache;
 mod empty;
 mod fork;
 mod rpc_chain;
+mod state_set;
 
-use crate::{evm::BlockInfo, prelude::*};
 pub use cache::Cache;
 pub use empty::Empty;
 pub use fork::Fork;
 pub use rpc_chain::RpcChain;
+pub use state_set::StateSet;
+
+use crate::prelude::*;
+
+/// Constant for the current block
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
+pub struct BlockInfo {
+    pub timestamp: u64,
+}
 
 /// Read only chain state
 pub trait ChainState {

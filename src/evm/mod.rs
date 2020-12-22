@@ -6,12 +6,6 @@ pub mod precompiles;
 pub use opcode::Opcode;
 use zkp_u256::U256;
 
-/// Constant for the current block
-#[derive(Clone, Default, Debug)]
-pub struct BlockInfo {
-    pub timestamp: u64,
-}
-
 /// Constants for the current transaction
 #[derive(Clone, Default, Debug)]
 pub struct TransactionInfo {
