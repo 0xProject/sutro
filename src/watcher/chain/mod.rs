@@ -1,10 +1,10 @@
 mod cache;
 mod empty;
-mod eth_json_rpc;
 mod fork;
+mod rpc_chain;
 
 use crate::{evm::BlockInfo, prelude::*};
-pub use eth_json_rpc::EthJsonRpc;
+pub use rpc_chain::RpcChain;
 
 /// Read only chain state
 pub trait ChainState {
