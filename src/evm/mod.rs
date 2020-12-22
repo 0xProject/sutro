@@ -7,20 +7,20 @@ pub use opcode::Opcode;
 use zkp_u256::U256;
 
 /// Constant for the current block
-#[derive(Clone, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct BlockInfo {
     pub timestamp: u64,
 }
 
 /// Constants for the current transaction
-#[derive(Clone, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct TransactionInfo {
     pub origin:    U256,
     pub gas_price: U256,
 }
 
 /// Constants for the current call
-#[derive(Clone, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct CallInfo {
     pub sender:      U256,
     pub address:     U256,

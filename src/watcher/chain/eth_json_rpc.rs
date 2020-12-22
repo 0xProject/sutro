@@ -40,7 +40,7 @@ impl ChainState for EthJsonRpc {
         todo!()
     }
 
-    fn balance(&self, _address: &U256) -> usize {
+    fn balance(&self, _address: &U256) -> U256 {
         todo!()
     }
 

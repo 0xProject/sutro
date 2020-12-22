@@ -6,19 +6,25 @@ use super::ChainState;
 use crate::evm::BlockInfo;
 use zkp_u256::{Zero, U256};
 
-struct Empty {}
+/// An empty chain state with a given block header
+///
+/// All balances, nonces and storage is zero, there is no contract code.
+#[derive(Clone, Default, Debug)]
+struct Empty {
+    block: BlockInfo,
+}
 
 impl ChainState for Empty {
     fn block(&self) -> BlockInfo {
-        BlockInfo { timestamp: 0 }
+        self.block.clone()
     }
 
     fn nonce(&self, _address: &U256) -> usize {
         0
     }
 
-    fn balance(&self, _address: &U256) -> usize {
-        0
+    fn balance(&self, _address: &U256) -> U256 {
+        U256::zero()
     }
 
     fn code(&self, _address: &U256) -> Vec<u8> {
