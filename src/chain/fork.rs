@@ -9,12 +9,26 @@ use crate::{evm::BlockInfo, prelude::*};
 use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
-struct Fork<Base: ChainState> {
+pub struct Fork<Base: ChainState> {
     base:     Base,
     nonces:   HashMap<U256, usize>,
     balances: HashMap<U256, U256>,
     codes:    HashMap<U256, Vec<u8>>,
     storages: HashMap<(U256, U256), U256>,
+}
+
+impl<Base: ChainState> Fork<Base> {
+    pub fn inner(&self) -> &Base {
+        &self.base
+    }
+
+    pub fn inner_mut(&mut self) -> &mut Base {
+        &mut self.base
+    }
+
+    pub fn into_inner(self) -> Base {
+        self.base
+    }
 }
 
 impl<Base: ChainState> From<Base> for Fork<Base> {

@@ -10,8 +10,14 @@ use zkp_u256::{Zero, U256};
 ///
 /// All balances, nonces and storage is zero, there is no contract code.
 #[derive(Clone, Default, Debug)]
-struct Empty {
+pub struct Empty {
     block: BlockInfo,
+}
+
+impl From<BlockInfo> for Empty {
+    fn from(block: BlockInfo) -> Self {
+        Self { block }
+    }
 }
 
 impl ChainState for Empty {

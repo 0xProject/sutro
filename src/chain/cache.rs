@@ -11,7 +11,7 @@ use std::{cell::RefCell, collections::HashMap};
 ///
 /// Panics if reads are called re-entrantly.
 #[derive(Debug)]
-struct Cache<Base: ChainState> {
+pub struct Cache<Base: ChainState> {
     base:     Base,
     block:    RefCell<Option<BlockInfo>>,
     nonces:   RefCell<HashMap<U256, usize>>,

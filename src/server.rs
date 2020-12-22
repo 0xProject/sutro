@@ -31,6 +31,15 @@ where
 
 #[tracing::instrument]
 pub async fn async_main() -> Result<()> {
+    use crate::chain::ChainState;
+
+    // Create a forked chain
+    let chain = crate::chain::fork("http://localhost:8545")
+        .await
+        .context("Forking chain")?;
+    let block = chain.block();
+    info!("Block info: {:#?}", block);
+
     // Catch SIGTERM so the container can shutdown without an init process.
     let stop_signal = tokio::signal::ctrl_c().map(|_| {
         info!("SIGTERM received, shutting down.");

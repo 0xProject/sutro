@@ -5,9 +5,10 @@
 // TODO
 #![allow(dead_code)]
 
+mod chain;
 mod evm;
+mod rpc;
 mod server;
-mod watcher;
 
 pub mod prelude {
     pub use crate::require;
@@ -20,6 +21,7 @@ pub mod prelude {
     pub use serde::{Deserialize, Serialize};
     pub use thiserror::Error;
     pub use tokio::prelude::*;
+    pub use tokio_compat_02::FutureExt as Tokio2;
     pub use tracing::{debug, error, info, trace, warn};
     pub use zkp_u256::{Binary as _, One as _, Pow as _, Zero as _, U256};
 }
@@ -110,9 +112,10 @@ pub fn main() -> Result<()> {
     // Initialize log output (prepend CLI verbosity to RUST_LOG)
     let log_cli = match options.verbose {
         0 => "info",
-        1 => "rust_app_template=debug",
-        2 => "rust_app_template=trace",
-        3 => "rust_app_template=trace,debug",
+        1 => "sutro=debug",
+        2 => "sutro=trace",
+        3 => "sutro=trace,debug,hyper=info",
+        4 => "sutro=trace,debug",
         _ => "trace",
     };
     let log_filter = std::env::var("RUST_LOG").map_or_else(
