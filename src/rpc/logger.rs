@@ -12,6 +12,8 @@ use std::{
     sync::atomic::{self, AtomicUsize},
     time::Instant,
 };
+use tracing::debug_span;
+use tracing_futures::Instrument;
 
 // See <https://github.com/paritytech/jsonrpc/blob/v15.1.0/core/examples/middlewares.rs>
 #[derive(Default)]
@@ -26,20 +28,26 @@ impl<M: Metadata> Middleware<M> for Logger {
         F: FnOnce(Request, M) -> X + Send,
         X: Future<Output = Option<Response>> + Send + 'static,
     {
+        let span = debug_span!("request");
+        let _enter = span.enter();
         let start = Instant::now();
         let request_number = self.0.fetch_add(1, atomic::Ordering::SeqCst);
         let request_method = format_request(&request);
         debug!("Processing request {}: {}", request_number, request_method);
 
-        Either::Left(Box::pin(next(request, meta).map(move |res| {
-            info!(
-                "Request {}: {} took {:?}",
-                request_number,
-                request_method,
-                HumanDuration::from(start.elapsed())
-            );
-            res
-        })))
+        Either::Left(Box::pin(
+            next(request, meta)
+                .map(move |res| {
+                    info!(
+                        "Request {}: {} took {:?}",
+                        request_number,
+                        request_method,
+                        HumanDuration::from(start.elapsed())
+                    );
+                    res
+                })
+                .in_current_span(),
+        ))
     }
 }
 

@@ -3,7 +3,7 @@ mod jit;
 mod opcode;
 pub mod precompiles;
 
-pub use opcode::Opcode;
+pub use self::opcode::Opcode;
 use zkp_u256::U256;
 
 /// Constants for the current transaction

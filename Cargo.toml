@@ -28,7 +28,7 @@ required-features = ["bench"]
 anyhow = "1.0"
 criterion = { version = "0.3", optional = true }
 futures = "0.3"
-hex = "0.4"
+hex = { versio = "0.4", features = [ "serde" ] }
 hex-literal = "0.3"
 hyper = "0.13"
 itertools = "0.9"
@@ -40,7 +40,7 @@ rayon = "1.5"
 serde = "1.0"
 structopt = "0.3"
 thiserror = "1.0"
-tokio = { version = "0.3", features = ["macros", "rt-multi-thread", "signal"] }
+tokio = { version = "0.3", features = ["macros", "rt-multi-thread", "signal", "sync"] }
 tokio-compat-02 = "0.1"
 tracing = "0.1"
 tracing-futures = "0.2"
@@ -49,6 +49,8 @@ tracing-subscriber = "0.2"
 tracing-test = "0.1"
 tracing-timing = "0.4"
 
+smallvec = { version = "1.5", features = [ "serde" ] }
+async-trait = "0.1"
 cranelift = "0.68"
 cranelift-module = "0.68"
 cranelift-simplejit = "0.68"
@@ -58,6 +60,8 @@ jsonrpc-derive = "16.0"
 jsonrpc-http-server = "16.0"
 rlp = "0.4"
 serde_json = "1.0"
+serde_with = "1.6"
+serde-hex = "0.1"
 tiny-keccak = "2.0"
 web3 = "0.14"
 zkp-u256 = "0.2"

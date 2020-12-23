@@ -12,7 +12,7 @@ mod server;
 
 pub mod prelude {
     pub use crate::require;
-    pub use anyhow::{Context as _, Result};
+    pub use anyhow::{anyhow, Context as _, Result};
     pub use futures::prelude::*;
     pub use hex_literal::hex;
     pub use itertools::Itertools as _;
@@ -63,8 +63,12 @@ struct Options {
 
 #[derive(Debug, PartialEq, StructOpt)]
 enum Command {
-    /// Show version information
-    Test,
+    /// Run an Ethereum JSON-RPC server
+    Chain {
+        /// Underlying JSON-RPC url to fork from
+        #[structopt(long, default_value = "http://localhost:8545")]
+        fork: String,
+    },
 }
 
 fn parse_hex_u64(src: &str) -> Result<u64, std::num::ParseIntError> {
@@ -114,7 +118,7 @@ pub fn main() -> Result<()> {
         0 => "info",
         1 => "sutro=debug",
         2 => "sutro=trace",
-        3 => "sutro=trace,debug,hyper=info",
+        3 => "sutro=trace,debug,hyper=info,tokio_reactor=info",
         4 => "sutro=trace,debug",
         _ => "trace",
     };
@@ -163,7 +167,7 @@ pub fn main() -> Result<()> {
         .enable_all()
         .build()
         .context("Error creating Tokio runtime")?
-        .block_on(server::async_main())
+        .block_on(server::async_main(options))
         .context("Error in main thread")?;
 
     // Terminate successfully

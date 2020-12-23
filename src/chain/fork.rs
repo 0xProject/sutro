@@ -6,7 +6,6 @@
 
 use super::{BlockInfo, ChainState, StateSet, WriteableChainState};
 use crate::prelude::*;
-use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 pub struct Fork<Base: ChainState> {
