@@ -40,15 +40,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf8dcb5b4bbaa28653b647d8c77bd4ed40183b48882e130c1f1ffb73de069fd7"
 
 [[package]]
-name = "array-init"
-version = "0.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23589ecb866b460d3a0f1278834750268c607e8e28a1b982c907219f3178cd72"
-dependencies = [
- "nodrop",
-]
-
-[[package]]
 name = "arrayvec"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1122,9 +1113,6 @@ name = "hex"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "644f9158b2f133fd50f5fb3242878846d9eb792e445c893805ff0e3824006e35"
-dependencies = [
- "serde",
-]
 
 [[package]]
 name = "hex-literal"
@@ -1703,12 +1691,6 @@ name = "no-std-compat"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b93853da6d84c2e3c7d730d6473e8817692dd89be387eb01b94d7f108ecb5b8c"
-
-[[package]]
-name = "nodrop"
-version = "0.1.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72ef4a56884ca558e5ddb05a1d1e7e1bfd9a68d9ed024c21704cc98872dae1bb"
 
 [[package]]
 name = "nom"
@@ -2455,17 +2437,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde-hex"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca37e3e4d1b39afd7ff11ee4e947efae85adfddf4841787bfa47c470e96dc26d"
-dependencies = [
- "array-init",
- "serde",
- "smallvec 0.6.13",
-]
-
-[[package]]
 name = "serde_cbor"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2682,7 +2653,6 @@ dependencies = [
  "rayon",
  "rlp",
  "serde",
- "serde-hex",
  "serde_json",
  "serde_with",
  "smallvec 1.5.1",
@@ -3606,9 +3576,9 @@ checksum = "85e60b0d1b5f99db2556934e21937020776a5d31520bf169e851ac44e6420214"
 
 [[package]]
 name = "zkp-u256"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66beb05f6d1d209cce4837b1aced9055a34948d619fd58f55c2049b10b597d09"
+checksum = "f9931b419a40ffca971d538c4b5edca60d1d82d77fd6bce73fb4bcb9639776c4"
 dependencies = [
  "crunchy",
  "hex",

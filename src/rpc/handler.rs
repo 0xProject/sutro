@@ -1,3 +1,10 @@
+use super::{
+    types::{Address, BlockHeader, BlockNumber, Bytes, Hex, Log, LogFilter},
+    EthereumRpc,
+};
+use crate::prelude::*;
+use jsonrpc_core::Result as RpcResult;
+
 pub struct RpcHandler {
     pub client_version: String,
     pub chain_id:       usize,
@@ -9,56 +16,73 @@ impl EthereumRpc for RpcHandler {
         Ok(self.client_version.clone())
     }
 
-    fn gas_price(&self) -> RpcResult<W256> {
-        Ok(W256::zero())
+    fn gas_price(&self) -> RpcResult<Hex<U256>> {
+        Ok(U256::zero().into())
     }
 
-    fn send_transaction(&self, tx: web3::types::TransactionRequest) -> RpcResult<W256> {
-        Ok(W256::zero())
+    fn send_transaction(&self, tx: web3::types::TransactionRequest) -> RpcResult<Hex<U256>> {
+        Ok(U256::zero().into())
     }
 
     fn net_version(&self) -> RpcResult<String> {
         Ok(format!("{}", self.chain_id))
     }
 
-    fn evm_snapshot(&self) -> RpcResult<String> {
-        Ok("0x1".into())
+    fn get_block_by_number(
+        &self,
+        block_number: BlockNumber,
+        full: bool,
+    ) -> RpcResult<Option<BlockHeader>> {
+        let mut block_header = BlockHeader::default();
+        block_header.logs_bloom = Some(vec![0_u8; 256].into());
+        block_header.number = Some(42.into());
+        block_header.nonce = Some(23.into());
+        block_header.hash = Some(U256::zero());
+        Ok(Some(block_header))
     }
 
-    fn evm_revert(&self, snapshot: String) -> RpcResult<bool> {
+    fn get_nonce(&self, address: Address, block_number: BlockNumber) -> RpcResult<Hex<u64>> {
+        Ok(1.into())
+    }
+
+    fn get_code(&self, address: Address, block_number: BlockNumber) -> RpcResult<Bytes> {
+        Ok(b"code".to_vec().into())
+    }
+
+    fn estimate_gas(&self, call: super::types::CallRequest) -> RpcResult<Hex<U256>> {
+        Ok(U256::zero().into())
+    }
+
+    fn send_raw_transaction(&self, data: Bytes) -> RpcResult<U256> {
+        Ok(U256::zero())
+    }
+
+    fn get_logs(&self, filter: LogFilter) -> RpcResult<Vec<Log>> {
+        Ok(Vec::new())
+    }
+
+    fn evm_snapshot(&self) -> RpcResult<Hex<u64>> {
+        Ok(1.into())
+    }
+
+    fn evm_revert(&self, snapshot: Hex<u64>) -> RpcResult<bool> {
         Ok(true)
     }
 
-    fn get_block_by_number(
-        &self,
-        block_number: String,
-        full: bool,
-    ) -> RpcResult<web3::types::BlockHeader> {
-        Ok(web3::types::BlockHeader {
-            hash:              Some(H256::zero()),
-            parent_hash:       H256::zero(),
-            uncles_hash:       H256::zero(),
-            author:            H160::zero(),
-            state_root:        H256::zero(),
-            transactions_root: H256::zero(),
-            receipts_root:     H256::zero(),
-            number:            Some(U64::zero()),
-            gas_used:          W256::zero(),
-            gas_limit:         W256::zero(),
-            extra_data:        Bytes::default(),
-            logs_bloom:        H2048::zero(),
-            timestamp:         W256::zero(),
-            difficulty:        W256::zero(),
-            mix_hash:          Some(H256::zero()),
-            nonce:             Some(H64::zero()),
-        })
+    fn evm_increaseTime(&self, amount_sec: u64) -> RpcResult<u64> {
+        todo!()
     }
 
-    fn get_nonce(&self, address: web3::types::H160, block_number: String) -> RpcResult<String> {
-        Ok("0x1".into())
+    fn evm_mine(&self, timestamp: Option<u64>) -> RpcResult<Hex<u64>> {
+        // Always returns zero
+        Ok(0.into())
     }
 
-    fn get_logs(&self, filter: LogFilter) -> Result<Vec<Log>> {
-        Ok(Vec::new())
+    fn evm_unlock_unknown_account(&self, address: Address) -> RpcResult<bool> {
+        todo!()
+    }
+
+    fn evm_lock_unknown_account(&self, address: Address) -> RpcResult<bool> {
+        todo!()
     }
 }

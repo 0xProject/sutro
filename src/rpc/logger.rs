@@ -6,8 +6,9 @@ use humantime::Duration as HumanDuration;
 use jsonrpc_core::{
     middleware,
     types::request::{Call, Request},
-    FutureResponse, Metadata, Middleware, Response,
+    FutureResponse, Metadata, Middleware, Output, Response,
 };
+use serde_json::to_string_pretty;
 use std::{
     sync::atomic::{self, AtomicUsize},
     time::Instant,
@@ -34,17 +35,30 @@ impl<M: Metadata> Middleware<M> for Logger {
         let request_number = self.0.fetch_add(1, atomic::Ordering::SeqCst);
         let request_method = format_request(&request);
         debug!("Processing request {}: {}", request_number, request_method);
+        trace!("Request {}", to_string_pretty(&request).unwrap_or_default());
 
         Either::Left(Box::pin(
             next(request, meta)
-                .map(move |res| {
+                .map(move |response| {
                     info!(
-                        "Request {}: {} took {:?}",
+                        "Request {}: {} took {}",
                         request_number,
                         request_method,
                         HumanDuration::from(start.elapsed())
                     );
-                    res
+                    if let Some(Response::Single(Output::Failure(response))) = &response {
+                        // TODO: Batch responses
+                        warn!(
+                            "Responding error {}",
+                            to_string_pretty(&response).unwrap_or_default()
+                        );
+                    } else {
+                        trace!(
+                            "Response {}",
+                            to_string_pretty(&response).unwrap_or_default()
+                        );
+                    }
+                    response
                 })
                 .in_current_span(),
         ))

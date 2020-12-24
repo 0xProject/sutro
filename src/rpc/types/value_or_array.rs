@@ -1,7 +1,6 @@
 use crate::prelude::*;
-use serde::{de, ser};
 use smallvec::{smallvec, SmallVec};
-use std::{fmt, iter::FromIterator, marker::PhantomData};
+use std::iter::FromIterator;
 
 #[derive(Default, Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(from = "Representation<T>", into = "Representation<T>")]

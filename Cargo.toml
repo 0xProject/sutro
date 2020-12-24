@@ -28,7 +28,7 @@ required-features = ["bench"]
 anyhow = "1.0"
 criterion = { version = "0.3", optional = true }
 futures = "0.3"
-hex = { versio = "0.4", features = [ "serde" ] }
+hex = "0.4"
 hex-literal = "0.3"
 hyper = "0.13"
 itertools = "0.9"
@@ -61,10 +61,9 @@ jsonrpc-http-server = "16.0"
 rlp = "0.4"
 serde_json = "1.0"
 serde_with = "1.6"
-serde-hex = "0.1"
 tiny-keccak = "2.0"
 web3 = "0.14"
-zkp-u256 = "0.2"
+zkp-u256 = "0.2.1"
 
 
 [dev-dependencies]

@@ -37,7 +37,7 @@ pub trait WriteableChainState: ChainState {
 }
 
 /// Create a fork from a JSON-RPC URL.
-pub async fn fork(url: &str) -> Result<Fork<Cache<RpcChain<web3::transports::Http>>>> {
+pub async fn fork(url: &str) -> AnyResult<Fork<Cache<RpcChain<web3::transports::Http>>>> {
     let transport = web3::transports::Http::new(url).context("Creating transport")?;
 
     let web3 = web3::Web3::new(transport.clone());

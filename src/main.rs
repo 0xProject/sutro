@@ -12,7 +12,7 @@ mod server;
 
 pub mod prelude {
     pub use crate::require;
-    pub use anyhow::{anyhow, Context as _, Result};
+    pub use anyhow::{anyhow, Context as _, Result as AnyResult};
     pub use futures::prelude::*;
     pub use hex_literal::hex;
     pub use itertools::Itertools as _;
@@ -92,7 +92,7 @@ where
 }
 
 #[allow(clippy::cognitive_complexity)]
-pub fn main() -> Result<()> {
+pub fn main() -> AnyResult<()> {
     // Parse CLI and handle help and version (which will stop the application).
     #[rustfmt::skip]
     let version = format!("\

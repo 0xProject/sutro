@@ -2,11 +2,44 @@
 //! needs.
 
 mod address;
+mod block_header;
 mod block_number;
+mod bytes;
+mod call;
+mod hex;
+mod log;
 mod log_filter;
 mod value_or_array;
 
+use crate::prelude::*;
+
 pub use self::{
-    address::Address, block_number::BlockNumber, log_filter::LogFilter,
+    address::Address,
+    block_header::BlockHeader,
+    block_number::BlockNumber,
+    bytes::Bytes,
+    call::CallRequest,
+    hex::Hex,
+    log::{Log, LogBlock},
+    log_filter::LogFilter,
     value_or_array::ValueOrArray,
 };
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::test::prelude::{assert_eq, *};
+    use serde_json::{from_value, json, to_value};
+
+    #[test]
+    fn test_u256_zero() {
+        let obj = U256::zero();
+        let json = to_value(&obj).unwrap();
+        assert_eq!(
+            &json,
+            &json!("0x0000000000000000000000000000000000000000000000000000000000000000")
+        );
+        let de: U256 = from_value(json).unwrap();
+        assert_eq!(de, obj);
+    }
+}
