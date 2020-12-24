@@ -1,13 +1,19 @@
 use crate::prelude::*;
 use serde::{de, ser};
-use std::fmt;
+use std::{fmt, fmt::Debug};
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(PartialEq, Clone)]
 pub struct BloomFilter([u8; 256]);
 
 impl Default for BloomFilter {
     fn default() -> Self {
         Self([0; 256])
+    }
+}
+
+impl Debug for BloomFilter {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "BloomFilter(hex!(\"{}\"))", hex::encode(self.0))
     }
 }
 

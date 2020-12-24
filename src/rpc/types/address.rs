@@ -1,14 +1,20 @@
 use crate::prelude::*;
 use serde::{de, ser};
-use std::fmt;
+use std::{fmt, fmt::Debug};
 
 /// Ethereum addresses with Serialization to 0x prefixed hex string.
 ///
 /// # To do
 ///
 /// * Add check sum
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Default, Debug)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub struct Address([u8; 20]);
+
+impl Debug for Address {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Address(hex!(\"{}\"))", hex::encode(self.0))
+    }
+}
 
 impl Serialize for Address {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

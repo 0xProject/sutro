@@ -1,9 +1,19 @@
 use crate::prelude::*;
 use serde::{de, ser};
-use std::fmt;
+use std::fmt::{self, Debug};
 
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Default, Debug)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub struct Bytes(Vec<u8>);
+
+impl Debug for Bytes {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "Bytes(hex!(\"{}\").to_vec())",
+            hex::encode(self.0.as_slice())
+        )
+    }
+}
 
 impl From<Vec<u8>> for Bytes {
     fn from(value: Vec<u8>) -> Self {

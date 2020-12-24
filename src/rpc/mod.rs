@@ -9,9 +9,14 @@ mod interface;
 mod logger;
 pub mod types;
 
-pub use self::{handler::RpcHandler, interface::EthereumRpc, logger::Logger};
+pub use self::{
+    handler::RpcHandler,
+    interface::{EthereumRpc, EthereumRpcClient},
+    logger::Logger,
+};
 use crate::prelude::*;
 use jsonrpc_core::MetaIoHandler;
+use jsonrpc_core_client::transports::http;
 use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, Server, ServerBuilder};
 
 pub fn serve(rpc_handler: RpcHandler) -> AnyResult<Server> {
@@ -24,4 +29,11 @@ pub fn serve(rpc_handler: RpcHandler) -> AnyResult<Server> {
         .start_http(&"127.0.0.1:8545".parse()?)
         .context("Starting RPC server")?;
     Ok(server)
+}
+
+pub async fn client(url: &str) -> AnyResult<EthereumRpcClient> {
+    http::connect(url)
+        .await
+        .map_err(|err| anyhow!("Error: {}", err))
+        .context("Connecting to RPC client")
 }

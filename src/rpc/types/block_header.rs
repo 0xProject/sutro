@@ -1,4 +1,4 @@
-use super::{Address, BloomFilter, Bytes, Hex};
+use super::{Address, BloomFilter, Bytes, Hex, Transaction};
 use crate::prelude::*;
 
 /// See <https://eth.wiki/json-rpc/API#eth_getblockbyhash>
@@ -23,9 +23,18 @@ pub struct BlockHeader {
     pub gas_limit:         Hex<u64>,
     pub gas_used:          Hex<u64>,
     pub timestamp:         Hex<u64>,
+    pub transactions:      TransactionEntries,
+}
 
-    // Short form
-    pub transactions: Vec<U256>,
-    /* Full form
-     * pub transactions:      Vec<Transaction>, */
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum TransactionEntries {
+    Hash(Vec<U256>),
+    Full(Vec<Transaction>),
+}
+
+impl Default for TransactionEntries {
+    fn default() -> Self {
+        Self::Full(vec![])
+    }
 }

@@ -10,12 +10,13 @@ mod call;
 mod hex;
 mod log;
 mod log_filter;
+mod transaction;
 mod transaction_receipt;
 mod value_or_array;
 
 pub use self::{
     address::Address,
-    block_header::BlockHeader,
+    block_header::{BlockHeader, TransactionEntries},
     block_number::BlockNumber,
     bloom_filter::BloomFilter,
     bytes::Bytes,
@@ -23,6 +24,7 @@ pub use self::{
     hex::Hex,
     log::{Log, LogBlock},
     log_filter::LogFilter,
+    transaction::Transaction,
     transaction_receipt::{TransactionReceipt, TransactionStatus},
     value_or_array::ValueOrArray,
 };

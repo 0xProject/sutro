@@ -5,7 +5,7 @@ use crate::prelude::*;
 use jsonrpc_core::Result as RpcResult;
 use jsonrpc_derive::rpc;
 
-#[rpc(server)]
+#[rpc]
 pub trait EthereumRpc {
     /// See <https://eth.wiki/json-rpc/API#web3_clientversion>
     #[rpc(name = "web3_clientVersion")]

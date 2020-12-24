@@ -58,7 +58,7 @@ humantime = "2.0"
 jsonrpc-core = "16.0"
 jsonrpc-derive = "16.0"
 jsonrpc-http-server = "16.0"
-jsonrpc-core-client = "16.0"
+jsonrpc-core-client = { version = "16.0", features = [ "http", "ws" ] }
 rlp = "0.4"
 serde_json = "1.0"
 serde_with = "1.6"
