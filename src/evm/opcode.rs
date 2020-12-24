@@ -103,6 +103,7 @@ pub enum Opcode {
     Unknown(u8),
 }
 
+#[allow(clippy::enum_glob_use)]
 use Opcode::*;
 
 impl From<u8> for Opcode {
@@ -200,7 +201,7 @@ impl From<u8> for Opcode {
 impl Opcode {
     pub fn to_u8(self) -> u8 {
         for u8 in 0..=255 {
-            if Opcode::from(u8) == self {
+            if Self::from(u8) == self {
                 return u8;
             }
         }
@@ -208,7 +209,7 @@ impl Opcode {
     }
 
     /// The encoded size of the opcode (how much it moves the program counter)
-    pub fn encoded_size(self) -> usize {
+    pub const fn encoded_size(self) -> usize {
         match self {
             Push(n) => (n as usize) + 1,
             _ => 1,
@@ -216,15 +217,12 @@ impl Opcode {
     }
 
     /// Is this the final instruction in a decoding sequence.
-    pub fn is_block_final(self) -> bool {
-        match self {
-            Stop | Jump | Return | Revert | Invalid | Unknown(_) => true,
-            _ => false,
-        }
+    pub const fn is_block_final(self) -> bool {
+        matches!(self, Stop | Jump | Return | Revert | Invalid | Unknown(_))
     }
 
     /// Stack (consume, produce)
-    pub fn stack(self) -> (usize, usize) {
+    pub const fn stack(self) -> (usize, usize) {
         match self {
             Stop | JumpDest | Invalid | Unknown(_) => (0, 0),
             Address | Origin | Caller | CallValue | CallDataSize | CodeSize | GasPrice
@@ -250,7 +248,8 @@ impl Opcode {
 
     /// Minimum amount of gas consumed by the opcode
     /// Does not account for memory growth
-    pub fn base_gas(self) -> usize {
+    #[allow(clippy::match_same_arms)]
+    pub const fn base_gas(self) -> usize {
         match self {
             // Zero
             Stop | Return | Revert => 0,

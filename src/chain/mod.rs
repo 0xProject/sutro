@@ -21,6 +21,7 @@ pub struct BlockInfo {
 }
 
 /// Read only chain state
+#[allow(clippy::module_name_repetitions)]
 pub trait ChainState {
     fn block(&self) -> BlockInfo;
     fn nonce(&self, address: &U256) -> usize;

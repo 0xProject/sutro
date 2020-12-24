@@ -14,6 +14,7 @@ pub struct Log {
     pub block: Option<LogBlock>,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Default, Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LogBlock {

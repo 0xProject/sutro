@@ -8,6 +8,7 @@ use super::{
 use crate::prelude::*;
 use jsonrpc_core::Result as RpcResult;
 
+#[allow(clippy::module_name_repetitions)]
 pub struct RpcHandler {
     pub client_version: String,
     pub chain_id:       usize,
@@ -23,7 +24,7 @@ impl EthereumRpc for RpcHandler {
         Ok(U256::zero().into())
     }
 
-    fn send_transaction(&self, tx: web3::types::TransactionRequest) -> RpcResult<Hex<U256>> {
+    fn send_transaction(&self, _tx: web3::types::TransactionRequest) -> RpcResult<Hex<U256>> {
         Ok(U256::zero().into())
     }
 
@@ -33,8 +34,8 @@ impl EthereumRpc for RpcHandler {
 
     fn get_block_by_number(
         &self,
-        block_number: BlockNumber,
-        full: bool,
+        _block_number: BlockNumber,
+        _full: bool,
     ) -> RpcResult<Option<BlockHeader>> {
         let mut block_header = BlockHeader::default();
         block_header.logs_bloom = Some(BloomFilter::default());
@@ -44,30 +45,30 @@ impl EthereumRpc for RpcHandler {
         Ok(Some(block_header))
     }
 
-    fn get_nonce(&self, address: Address, block_number: BlockNumber) -> RpcResult<Hex<u64>> {
+    fn get_nonce(&self, _address: Address, _block_number: BlockNumber) -> RpcResult<Hex<u64>> {
         Ok(1.into())
     }
 
-    fn get_code(&self, address: Address, block_number: BlockNumber) -> RpcResult<Bytes> {
+    fn get_code(&self, _address: Address, _block_number: BlockNumber) -> RpcResult<Bytes> {
         Ok(b"code".to_vec().into())
     }
 
-    fn estimate_gas(&self, call: super::types::CallRequest) -> RpcResult<Hex<U256>> {
+    fn estimate_gas(&self, _call: super::types::CallRequest) -> RpcResult<Hex<U256>> {
         Ok(U256::zero().into())
     }
 
-    fn send_raw_transaction(&self, data: Bytes) -> RpcResult<U256> {
+    fn send_raw_transaction(&self, _data: Bytes) -> RpcResult<U256> {
         Ok(U256::zero())
     }
 
     fn get_transaction_receipt(
         &self,
-        transaction_hash: U256,
+        _transaction_hash: U256,
     ) -> RpcResult<Option<TransactionReceipt>> {
         Ok(Some(TransactionReceipt::default()))
     }
 
-    fn get_logs(&self, filter: LogFilter) -> RpcResult<Vec<Log>> {
+    fn get_logs(&self, _filter: LogFilter) -> RpcResult<Vec<Log>> {
         Ok(Vec::new())
     }
 
@@ -75,24 +76,24 @@ impl EthereumRpc for RpcHandler {
         Ok(1.into())
     }
 
-    fn evm_revert(&self, snapshot: Hex<u64>) -> RpcResult<bool> {
+    fn evm_revert(&self, _snapshot: Hex<u64>) -> RpcResult<bool> {
         Ok(true)
     }
 
-    fn evm_increaseTime(&self, amount_sec: u64) -> RpcResult<u64> {
+    fn evm_increase_time(&self, _amount_sec: u64) -> RpcResult<u64> {
         todo!()
     }
 
-    fn evm_mine(&self, timestamp: Option<u64>) -> RpcResult<Hex<u64>> {
+    fn evm_mine(&self, _timestamp: Option<u64>) -> RpcResult<Hex<u64>> {
         // Always returns zero
         Ok(0.into())
     }
 
-    fn evm_unlock_unknown_account(&self, address: Address) -> RpcResult<bool> {
+    fn evm_unlock_unknown_account(&self, _address: Address) -> RpcResult<bool> {
         todo!()
     }
 
-    fn evm_lock_unknown_account(&self, address: Address) -> RpcResult<bool> {
+    fn evm_lock_unknown_account(&self, _address: Address) -> RpcResult<bool> {
         todo!()
     }
 }

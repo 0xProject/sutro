@@ -22,7 +22,7 @@ pub struct Program {
 
 impl Program {
     pub fn from(bytecode: Vec<u8>) -> Result<Self, Error> {
-        let mut result = Program {
+        let mut result = Self {
             bytecode,
             blocks: Map::default(),
         };
@@ -49,7 +49,7 @@ impl Program {
     }
 
     pub fn render<'a>(&self, builder: &mut FunctionBuilder<'a>) {
-        for (_, block) in &self.blocks {
+        for block in self.blocks.values() {
             block.render(builder);
         }
         builder.finalize();

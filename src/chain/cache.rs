@@ -42,11 +42,11 @@ impl<Base: ChainState> ChainState for Cache<Base> {
     }
 
     fn nonce(&self, address: &U256) -> usize {
-        self.state_set_mut()
+        *self
+            .state_set_mut()
             .nonces
             .entry(address.clone())
             .or_insert_with(|| self.base.nonce(address))
-            .clone()
     }
 
     fn balance(&self, address: &U256) -> U256 {

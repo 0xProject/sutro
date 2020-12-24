@@ -8,7 +8,7 @@ pub struct Hex<T: Hexable>(T);
 
 impl<T: Hexable> From<T> for Hex<T> {
     fn from(value: T) -> Self {
-        Hex(value)
+        Self(value)
     }
 }
 
@@ -49,7 +49,7 @@ impl<'de, T: Hexable> Deserialize<'de> for Hex<T> {
                 E: de::Error,
             {
                 let t = <T as Hexable>::from_hex(s)
-                    .map_err(|err| de::Error::invalid_value(de::Unexpected::Str(s), &self))?;
+                    .map_err(|_err| de::Error::invalid_value(de::Unexpected::Str(s), &self))?;
                 Ok(Hex(t))
             }
         }
@@ -63,17 +63,14 @@ pub trait Hexable: Sized {
     fn from_hex(str: &str) -> Result<Self, ParseIntError>;
 }
 
+#[allow(clippy::use_self)] // False positive due to macro expansion?
 impl Hexable for u64 {
     fn to_hex(&self) -> String {
         format!("{:#x}", self)
     }
 
     fn from_hex(str: &str) -> Result<Self, ParseIntError> {
-        let str = if str.starts_with("0x") {
-            &str[2..]
-        } else {
-            str
-        };
+        let str = str.strip_prefix("0x").unwrap_or(str);
         Self::from_str_radix(str, 16)
     }
 }
@@ -92,11 +89,7 @@ impl Hexable for U256 {
     }
 
     fn from_hex(str: &str) -> Result<Self, ParseIntError> {
-        let str = if str.starts_with("0x") {
-            &str[2..]
-        } else {
-            str
-        };
+        let str = str.strip_prefix("0x").unwrap_or(str);
         Ok(Self::from_hex_str(str))
     }
 }
@@ -104,7 +97,7 @@ impl Hexable for U256 {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::test::prelude::{assert_eq, *};
+    use crate::test::prelude::assert_eq;
     use serde_json::{from_value, json, to_value};
 
     #[test]

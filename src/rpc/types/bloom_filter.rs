@@ -39,11 +39,7 @@ impl<'de> Deserialize<'de> for BloomFilter {
             where
                 E: de::Error,
             {
-                let str = if str.starts_with("0x") {
-                    &str[2..]
-                } else {
-                    str
-                };
+                let str = str.strip_prefix("0x").unwrap_or(str);
                 let mut buffer = [0_u8; 256];
                 hex::decode_to_slice(str, &mut buffer).map_err::<E, _>(de::Error::custom)?;
                 Ok(BloomFilter(buffer))

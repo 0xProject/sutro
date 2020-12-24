@@ -13,8 +13,6 @@ mod log_filter;
 mod transaction_receipt;
 mod value_or_array;
 
-use crate::prelude::*;
-
 pub use self::{
     address::Address,
     block_header::BlockHeader,
@@ -31,8 +29,7 @@ pub use self::{
 
 #[cfg(test)]
 mod test {
-    use super::*;
-    use crate::test::prelude::{assert_eq, *};
+    use crate::{prelude::*, test::prelude::assert_eq};
     use serde_json::{from_value, json, to_value};
 
     #[test]

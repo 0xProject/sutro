@@ -20,8 +20,10 @@ pub mod prelude {
     pub use rayon::prelude::*;
     pub use serde::{Deserialize, Serialize};
     pub use thiserror::Error;
-    pub use tokio::prelude::*;
-    pub use tokio_compat_02::FutureExt as Tokio2;
+    pub use tokio::io::{
+        AsyncBufRead, AsyncBufReadExt as _, AsyncRead, AsyncReadExt as _, AsyncSeekExt as _,
+        AsyncWrite, AsyncWriteExt as _,
+    };
     pub use tracing::{debug, error, info, trace, warn};
     pub use zkp_u256::{Binary as _, One as _, Pow as _, Zero as _, U256};
 }
@@ -232,12 +234,8 @@ pub mod bench {
         pub use futures::executor::block_on;
     }
 
-    #[allow(clippy::wildcard_imports)]
-    use super::*;
     use crate::bench::prelude::*;
 
     #[cfg(feature = "bench")]
-    pub fn main(c: &mut Criterion) {
-        server::bench::group(c);
-    }
+    pub fn main(_c: &mut Criterion) {}
 }

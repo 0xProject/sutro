@@ -2,12 +2,8 @@ use super::types::{
     Address, BlockHeader, BlockNumber, Bytes, CallRequest, Hex, Log, LogFilter, TransactionReceipt,
 };
 use crate::prelude::*;
-use jsonrpc_core::{BoxFuture, MetaIoHandler, Params, Result as RpcResult};
+use jsonrpc_core::Result as RpcResult;
 use jsonrpc_derive::rpc;
-use jsonrpc_http_server::{AccessControlAllowOrigin, DomainsValidation, Server, ServerBuilder};
-use serde_json::{json, Value};
-use std::sync::Arc;
-use tokio::sync::RwLock;
 
 #[rpc(server)]
 pub trait EthereumRpc {
@@ -70,7 +66,7 @@ pub trait EthereumRpc {
     fn evm_revert(&self, snapshot: Hex<u64>) -> RpcResult<bool>;
 
     #[rpc(name = "evm_increaseTime")]
-    fn evm_increaseTime(&self, amount_sec: u64) -> RpcResult<u64>;
+    fn evm_increase_time(&self, amount_sec: u64) -> RpcResult<u64>;
 
     #[rpc(name = "evm_mine")]
     fn evm_mine(&self, timestamp: Option<u64>) -> RpcResult<Hex<u64>>;

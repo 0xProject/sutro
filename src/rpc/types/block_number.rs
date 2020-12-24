@@ -17,13 +17,13 @@ pub enum BlockNumber {
 
 impl From<u64> for BlockNumber {
     fn from(number: u64) -> Self {
-        BlockNumber::Number(number)
+        Self::Number(number)
     }
 }
 
 impl Default for BlockNumber {
     fn default() -> Self {
-        BlockNumber::Latest
+        Self::Latest
     }
 }
 
@@ -33,10 +33,10 @@ impl Serialize for BlockNumber {
         S: ser::Serializer,
     {
         match *self {
-            BlockNumber::Number(ref x) => serializer.serialize_str(&format!("0x{:x}", x)),
-            BlockNumber::Latest => serializer.serialize_str("latest"),
-            BlockNumber::Earliest => serializer.serialize_str("earliest"),
-            BlockNumber::Pending => serializer.serialize_str("pending"),
+            Self::Number(ref x) => serializer.serialize_str(&format!("0x{:x}", x)),
+            Self::Latest => serializer.serialize_str("latest"),
+            Self::Earliest => serializer.serialize_str("earliest"),
+            Self::Pending => serializer.serialize_str("pending"),
         }
     }
 }
@@ -65,8 +65,9 @@ impl<'de> Deserialize<'de> for BlockNumber {
                     "latest" => BlockNumber::Latest,
                     "earliest" => BlockNumber::Earliest,
                     "pending" => BlockNumber::Pending,
-                    number => {
-                        let number = u64::from_str_radix(number, 16).map_err(|err| {
+                    str => {
+                        let str = str.strip_prefix("0x").unwrap_or(str);
+                        let number = u64::from_str_radix(str, 16).map_err(|_err| {
                             de::Error::invalid_value(de::Unexpected::Str(s), &self)
                         })?;
                         BlockNumber::Number(number)

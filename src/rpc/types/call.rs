@@ -3,6 +3,7 @@ use crate::prelude::*;
 use serde_with::skip_serializing_none;
 
 /// Call request
+#[allow(clippy::module_name_repetitions)]
 #[skip_serializing_none]
 #[derive(Default, Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

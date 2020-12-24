@@ -1,10 +1,5 @@
 use super::{rpc, Command, Options};
 use crate::prelude::*;
-use hyper::{
-    service::{make_service_fn, service_fn},
-    Body, Request, Response, Server,
-};
-use std::{convert::Infallible, net::SocketAddr};
 
 pub(super) async fn async_main(options: Options) -> AnyResult<()> {
     use crate::chain::ChainState;
@@ -41,7 +36,7 @@ pub(super) async fn async_main(options: Options) -> AnyResult<()> {
         _ = stop_signal => {},
     };
     server_stop.close();
-    server_task.await;
+    server_task.await?;
 
     Ok(())
 }

@@ -8,13 +8,13 @@ pub struct ValueOrArray<T: Clone>(SmallVec<[T; 1]>);
 
 impl<T: Clone> From<T> for ValueOrArray<T> {
     fn from(value: T) -> Self {
-        ValueOrArray(smallvec![value])
+        Self(smallvec![value])
     }
 }
 
 impl<T: Clone> From<SmallVec<[T; 1]>> for ValueOrArray<T> {
     fn from(value: SmallVec<[T; 1]>) -> Self {
-        ValueOrArray(value)
+        Self(value)
     }
 }
 
@@ -32,12 +32,13 @@ enum Representation<T: Clone> {
     Many(SmallVec<[T; 1]>),
 }
 
+#[allow(clippy::fallible_impl_from)] // False positive
 impl<T: Clone> From<ValueOrArray<T>> for Representation<T> {
     fn from(mut value: ValueOrArray<T>) -> Self {
         match value.0.len() {
-            0 => Representation::None,
-            1 => Representation::One(value.0.pop().unwrap()),
-            _ => Representation::Many(value.0),
+            0 => Self::None,
+            1 => Self::One(value.0.pop().unwrap()),
+            _ => Self::Many(value.0),
         }
     }
 }
@@ -45,9 +46,9 @@ impl<T: Clone> From<ValueOrArray<T>> for Representation<T> {
 impl<T: Clone> From<Representation<T>> for ValueOrArray<T> {
     fn from(value: Representation<T>) -> Self {
         match value {
-            Representation::None => ValueOrArray(SmallVec::new()),
-            Representation::One(value) => ValueOrArray(smallvec![value]),
-            Representation::Many(vec) => ValueOrArray(vec),
+            Representation::None => Self(SmallVec::new()),
+            Representation::One(value) => Self(smallvec![value]),
+            Representation::Many(vec) => Self(vec),
         }
     }
 }
@@ -55,7 +56,7 @@ impl<T: Clone> From<Representation<T>> for ValueOrArray<T> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::test::prelude::{assert_eq, *};
+    use crate::test::prelude::assert_eq;
     use serde_json::{from_value, json, to_value};
     use std::iter::repeat;
 

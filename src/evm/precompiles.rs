@@ -8,7 +8,7 @@ use zkp_u256::U256;
 pub fn keccak256(bytes: &[u8]) -> U256 {
     let mut keccak = Keccak::v256();
     keccak.update(bytes);
-    let mut output = [0u8; 32];
+    let mut output = [0_u8; 32];
     keccak.finalize(&mut output);
     U256::from_bytes_be(&output)
 }

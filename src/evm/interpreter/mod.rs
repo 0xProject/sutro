@@ -52,6 +52,7 @@ impl<'a> ExecutionState<'a> {
         }
     }
 
+    #[allow(clippy::too_many_lines)] // TODO: Simplify
     pub fn step(&mut self) -> Option<ExecutionResult> {
         // Read from zero-extended bytecode
         // NOTE: Does the zero-extending work for Push(..) too?
@@ -66,6 +67,7 @@ impl<'a> ExecutionState<'a> {
         self.pc += 1;
 
         // Dispatch opcode
+        #[allow(clippy::match_same_arms)]
         match op {
             Opcode::Stop => todo!(),
             Opcode::Add => self.op2(|left, right| left + right),
@@ -183,7 +185,7 @@ impl<'a> ExecutionState<'a> {
                 self.handle_copy(&return_data);
                 std::mem::swap(&mut self.return_data, &mut return_data);
             }
-            Opcode::CodeCopy => self.handle_copy(&self.code),
+            Opcode::CodeCopy => self.handle_copy(self.code),
             Opcode::SLoad => {
                 let slot = self.stack.pop().unwrap();
                 println!("SLOAD {:?}", slot);

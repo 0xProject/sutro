@@ -18,13 +18,11 @@ pub struct LogFilter {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::test::prelude::{assert_eq, *};
-    use serde_json::{from_value, json, to_value};
-    use std::iter::repeat;
+    use serde_json::{from_value, json};
 
     #[test]
     fn test_decode() {
-        let de: LogFilter = from_value(json!({
+        let _de: LogFilter = from_value(json!({
           "address": null,
           "blockHash": "0x6869791f0a34781b29882982cc39e882768cf2c96995c2a110c577c53bc932d5",
           "topics": [

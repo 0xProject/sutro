@@ -38,11 +38,7 @@ impl<'de> Deserialize<'de> for Bytes {
             where
                 E: de::Error,
             {
-                let str = if str.starts_with("0x") {
-                    &str[2..]
-                } else {
-                    str
-                };
+                let str = str.strip_prefix("0x").unwrap_or(str);
                 let vec = hex::decode(str).map_err::<E, _>(de::Error::custom)?;
                 Ok(Bytes(vec))
             }
@@ -54,7 +50,7 @@ impl<'de> Deserialize<'de> for Bytes {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::test::prelude::{assert_eq, *};
+    use crate::test::prelude::assert_eq;
     use serde_json::{from_value, json, to_value};
 
     #[test]

@@ -38,11 +38,7 @@ impl<'de> Deserialize<'de> for Address {
             where
                 E: de::Error,
             {
-                let str = if str.starts_with("0x") {
-                    &str[2..]
-                } else {
-                    str
-                };
+                let str = str.strip_prefix("0x").unwrap_or(str);
                 let mut buffer = [0_u8; 20];
                 hex::decode_to_slice(str, &mut buffer).map_err::<E, _>(de::Error::custom)?;
                 Ok(Address(buffer))
@@ -55,7 +51,7 @@ impl<'de> Deserialize<'de> for Address {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::test::prelude::{assert_eq, *};
+    use crate::test::prelude::assert_eq;
     use serde_json::{from_value, json, to_value};
 
     #[test]

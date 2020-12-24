@@ -1,5 +1,6 @@
 use super::{BlockInfo, ChainState};
 use crate::prelude::*;
+use tokio_compat_02::FutureExt as Tokio2;
 use web3::{
     block_on,
     types::{BlockId, BlockNumber, H160, U256 as W256},

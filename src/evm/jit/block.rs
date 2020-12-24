@@ -18,7 +18,7 @@ impl std::fmt::Display for Block {
 }
 impl From<&[u8]> for Block {
     fn from(bytecode: &[u8]) -> Self {
-        Block::from_pc(bytecode, 0)
+        Self::from_pc(bytecode, 0)
     }
 }
 
@@ -62,13 +62,13 @@ impl Block {
                 break;
             }
         }
-        Block { instructions }
+        Self { instructions }
     }
 
     pub fn gas_cost(&self) -> usize {
         let mut result = 0;
         for inst in &self.instructions {
-            result += inst.opcode().map_or(0, |op| op.base_gas());
+            result += inst.opcode().map_or(0, Opcode::base_gas);
         }
         result
     }
