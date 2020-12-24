@@ -1,5 +1,8 @@
 use super::{
-    types::{Address, BlockHeader, BlockNumber, Bytes, Hex, Log, LogFilter},
+    types::{
+        Address, BlockHeader, BlockNumber, BloomFilter, Bytes, Hex, Log, LogFilter,
+        TransactionReceipt,
+    },
     EthereumRpc,
 };
 use crate::prelude::*;
@@ -34,7 +37,7 @@ impl EthereumRpc for RpcHandler {
         full: bool,
     ) -> RpcResult<Option<BlockHeader>> {
         let mut block_header = BlockHeader::default();
-        block_header.logs_bloom = Some(vec![0_u8; 256].into());
+        block_header.logs_bloom = Some(BloomFilter::default());
         block_header.number = Some(42.into());
         block_header.nonce = Some(23.into());
         block_header.hash = Some(U256::zero());
@@ -55,6 +58,13 @@ impl EthereumRpc for RpcHandler {
 
     fn send_raw_transaction(&self, data: Bytes) -> RpcResult<U256> {
         Ok(U256::zero())
+    }
+
+    fn get_transaction_receipt(
+        &self,
+        transaction_hash: U256,
+    ) -> RpcResult<Option<TransactionReceipt>> {
+        Ok(Some(TransactionReceipt::default()))
     }
 
     fn get_logs(&self, filter: LogFilter) -> RpcResult<Vec<Log>> {

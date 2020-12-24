@@ -4,11 +4,13 @@
 mod address;
 mod block_header;
 mod block_number;
+mod bloom_filter;
 mod bytes;
 mod call;
 mod hex;
 mod log;
 mod log_filter;
+mod transaction_receipt;
 mod value_or_array;
 
 use crate::prelude::*;
@@ -17,11 +19,13 @@ pub use self::{
     address::Address,
     block_header::BlockHeader,
     block_number::BlockNumber,
+    bloom_filter::BloomFilter,
     bytes::Bytes,
     call::CallRequest,
     hex::Hex,
     log::{Log, LogBlock},
     log_filter::LogFilter,
+    transaction_receipt::{TransactionReceipt, TransactionStatus},
     value_or_array::ValueOrArray,
 };
 

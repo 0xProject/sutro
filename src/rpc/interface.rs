@@ -1,4 +1,6 @@
-use super::types::{Address, BlockHeader, BlockNumber, Bytes, CallRequest, Hex, Log, LogFilter};
+use super::types::{
+    Address, BlockHeader, BlockNumber, Bytes, CallRequest, Hex, Log, LogFilter, TransactionReceipt,
+};
 use crate::prelude::*;
 use jsonrpc_core::{BoxFuture, MetaIoHandler, Params, Result as RpcResult};
 use jsonrpc_derive::rpc;
@@ -49,6 +51,13 @@ pub trait EthereumRpc {
     /// See <https://eth.wiki/json-rpc/API#eth_sendrawtransaction>
     #[rpc(name = "eth_sendRawTransaction")]
     fn send_raw_transaction(&self, data: Bytes) -> RpcResult<U256>;
+
+    /// See <https://eth.wiki/json-rpc/API#eth_gettransactionreceipt>
+    #[rpc(name = "eth_getTransactionReceipt")]
+    fn get_transaction_receipt(
+        &self,
+        transaction_hash: U256,
+    ) -> RpcResult<Option<TransactionReceipt>>;
 
     // Ganache extensions for testing
     //
