@@ -12,7 +12,10 @@ mod state_set;
 
 pub use self::{cache::Cache, empty::Empty, fork::Fork, rpc_chain::RpcChain, state_set::StateSet};
 
-use crate::prelude::*;
+use crate::{
+    prelude::*,
+    rpc::{self, types::BlockNumber},
+};
 
 /// Constant for the current block
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
@@ -38,18 +41,24 @@ pub trait WriteableChainState: ChainState {
 }
 
 /// Create a fork from a JSON-RPC URL.
-pub async fn fork(url: &str) -> AnyResult<Fork<Cache<RpcChain<web3::transports::Http>>>> {
-    let transport = web3::transports::Http::new(url).context("Creating transport")?;
-
-    let web3 = web3::Web3::new(transport.clone());
-    let latest = tokio_compat_02::FutureExt::compat(web3.eth().block_number())
+pub async fn fork(url: &str) -> AnyResult<Fork<Cache<RpcChain>>> {
+    let client = rpc::client(url)
         .await
-        .context("Fetching block number")?;
-    info!("Forking from block number {}", latest);
-    let block_number = web3::types::BlockNumber::Number(latest);
+        .context("Creating RPC client to fork from")?;
 
-    Ok(Fork::from(Cache::from(RpcChain::new(
-        transport,
-        block_number,
-    ))))
+    // Pin to latest block
+    let latest = client
+        .get_block_by_number(BlockNumber::Latest, false)
+        .await
+        .map_err(|err| anyhow!("Error: {}", err))
+        .context("Fetching latest block number")?
+        .ok_or_else(|| anyhow!("Latest block not found"))?
+        .number
+        .ok_or_else(|| anyhow!("Latest block has no number"))?
+        .into_inner();
+    info!("Forking from block number {}", latest);
+    let block_number = BlockNumber::Number(latest);
+
+    // Create monad stack
+    Ok(Fork::from(Cache::from(RpcChain::new(client, block_number))))
 }

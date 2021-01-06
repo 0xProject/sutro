@@ -13,11 +13,11 @@ impl<T: Hexable> From<T> for Hex<T> {
 }
 
 impl<T: Hexable> Hex<T> {
-    fn inner_ref(&self) -> &T {
+    pub fn inner_ref(&self) -> &T {
         &self.0
     }
 
-    fn into(self) -> T {
+    pub fn into_inner(self) -> T {
         self.0
     }
 }

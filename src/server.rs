@@ -1,26 +1,14 @@
 use super::{Command, Options};
-use crate::{
-    prelude::*,
-    rpc::{self, types::BlockNumber},
-};
+use crate::{prelude::*, rpc};
 
 pub(super) async fn async_main(options: Options) -> AnyResult<()> {
     use crate::chain::ChainState;
 
-    // Create a client
-    let url = match options.command {
-        Some(Command::Chain { fork }) => fork,
-        _ => return Err(anyhow!("Unexpected subcommand")),
-    };
-    let client = rpc::client(&url).await?;
-    let result = client
-        .get_block_by_number(BlockNumber::Latest, true)
-        .await
-        .map_err(|err| anyhow!("Error: {}", err))
-        .context("Fetching latest block")?;
-    info!("Latest block: {:#?}", result);
-
     // Create a forked chain
+    let url = match options.command {
+        Some(Command::Chain { fork }) => Ok(fork),
+        _ => Err(anyhow!("Unexpected subcommand")),
+    }?;
     let chain = crate::chain::fork(&url).await.context("Forking chain")?;
     let block = chain.block();
     info!("Block info: {:#?}", block);
