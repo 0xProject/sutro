@@ -473,7 +473,7 @@ dependencies = [
  "clap",
  "criterion-plot",
  "csv",
- "itertools",
+ "itertools 0.9.0",
  "lazy_static",
  "num-traits",
  "oorandom",
@@ -495,7 +495,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e022feadec601fba1649cfa83586381a4ad31c6bf3a9ab7d408118b05dd9889d"
 dependencies = [
  "cast",
- "itertools",
+ "itertools 0.9.0",
 ]
 
 [[package]]
@@ -1399,7 +1399,7 @@ version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f7a72f11830b52333f36e3b09a288333888bf54380fd0ac0790a3c31ab0f3c5"
 dependencies = [
- "rlp",
+ "rlp 0.4.6",
 ]
 
 [[package]]
@@ -1444,6 +1444,15 @@ name = "itertools"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "284f18f85651fe11e8a991b2adb42cb078325c996ed026d994719efcfca1d54b"
+dependencies = [
+ "either",
+]
+
+[[package]]
+name = "itertools"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37d572918e350e82412fe766d24b15e6682fb2ed2bbe018280caa810397cb319"
 dependencies = [
  "either",
 ]
@@ -2593,6 +2602,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "rlp"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e54369147e3e7796c9b885c7304db87ca3d09a0a98f72843d532868675bbfba8"
+dependencies = [
+ "bytes 1.0.0",
+ "rustc-hex",
+]
+
+[[package]]
 name = "rustc-hash"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2943,7 +2962,7 @@ dependencies = [
  "hex-literal",
  "humantime",
  "hyper 0.14.1",
- "itertools",
+ "itertools 0.10.0",
  "jsonrpc-core 16.0.0",
  "jsonrpc-core-client",
  "jsonrpc-derive",
@@ -2955,7 +2974,7 @@ dependencies = [
  "rand 0.8.0",
  "rand_pcg 0.3.0",
  "rayon",
- "rlp",
+ "rlp 0.5.0",
  "serde",
  "serde_json",
  "serde_with",
@@ -3159,7 +3178,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a12a3eb39ee2c231be64487f1fcbe726c8f2514876a55480a5ab8559fc374252"
 dependencies = [
  "autocfg 1.0.1",
- "futures-core",
  "pin-project-lite 0.2.0",
 ]
 
@@ -3207,15 +3225,16 @@ dependencies = [
 
 [[package]]
 name = "tokio-compat-02"
-version = "0.1.2"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb4cec419b8b6f06c32e74aae6d8c5e79646d038a38e5ea2b36045f2c3296e22"
+checksum = "e7d4237822b7be8fff0a7a27927462fad435dcb6650f95cea9e946bf6bdc7e07"
 dependencies = [
  "bytes 0.5.6",
  "once_cell",
- "pin-project-lite 0.1.11",
+ "pin-project-lite 0.2.0",
  "tokio 0.2.23",
- "tokio 0.3.5",
+ "tokio 1.0.0",
+ "tokio-stream",
 ]
 
 [[package]]
@@ -3299,6 +3318,17 @@ dependencies = [
  "tokio-executor",
  "tokio-io",
  "tokio-sync",
+]
+
+[[package]]
+name = "tokio-stream"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4cdeb73537e63f98adcd73138af75e3f368ccaecffaa29d7eb61b9f5a440457"
+dependencies = [
+ "futures-core",
+ "pin-project-lite 0.2.0",
+ "tokio 1.0.0",
 ]
 
 [[package]]
@@ -3868,7 +3898,7 @@ dependencies = [
  "native-tls",
  "parking_lot 0.11.1",
  "pin-project 1.0.2",
- "rlp",
+ "rlp 0.4.6",
  "secp256k1",
  "serde",
  "serde_json",
@@ -3988,7 +4018,7 @@ checksum = "f9931b419a40ffca971d538c4b5edca60d1d82d77fd6bce73fb4bcb9639776c4"
 dependencies = [
  "crunchy",
  "hex",
- "itertools",
+ "itertools 0.9.0",
  "no-std-compat",
  "num-traits",
  "parity-scale-codec",
