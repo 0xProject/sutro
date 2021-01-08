@@ -19,10 +19,11 @@ pub(super) async fn async_main(options: Options) -> AnyResult<()> {
         chain_id:       1337,
         gas_price:      U256::zero(),
     };
-    let server = rpc::serve(rpc_handler)?;
+    let addr = "0.0.0.0:8545".parse()?;
+    let server = rpc::serve(&addr, rpc_handler)?;
     let server_stop = server.close_handle();
     let mut server_task = tokio::task::spawn_blocking(move || {
-        info!("RPC server starting");
+        info!("RPC server started on {}", addr);
         server.wait();
     });
 

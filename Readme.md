@@ -46,3 +46,28 @@ Debugging:
 ```
 clear; RUST_LOG="trace,tokio=info,hyper=info,mio=info" cargo run
 ```
+
+
+## Testing using Ethereum tests
+
+```
+git clone https://github.com/ethereum/retesteth
+cd retesteth
+docker build -t retesteth .
+cd ..
+git clone https://github.com/ethereum/tests
+cd tests
+docker run --rm -ti -v $(pwd):/tests retesteth -t BlockchainTests/ValidBlocks/VMTests -- --testpath /tests --clients geth --nodes host.docker.internal:8545 --all
+```
+
+Run a single test:
+
+```
+docker run --rm -ti -v $(pwd):/tests retesteth -t BlockchainTests/ValidBlocks/VMTests/vmBitwiseLogicOperation -- --testpath /tests --clients geth --nodes 192.168.1.2:8545 --singletest xor5 --singlenet Istanbul
+```
+
+Stop the tester if it hangs
+
+```
+docker kill $(docker ps  | grep retesteth | cut -d ' ' -f 1)
+```

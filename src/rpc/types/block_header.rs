@@ -1,4 +1,4 @@
-use super::{Address, BloomFilter, Bytes, Hex, Transaction};
+use super::{Address, BloomFilter, Bytes, Hex, HexFull, Transaction};
 use crate::prelude::*;
 
 /// See <https://eth.wiki/json-rpc/API#eth_getblockbyhash>
@@ -7,8 +7,9 @@ use crate::prelude::*;
 pub struct BlockHeader {
     pub number:            Option<Hex<u64>>,
     pub hash:              Option<U256>,
+    pub mix_hash:          Option<U256>,
     pub parent_hash:       U256,
-    pub nonce:             Option<Hex<u64>>, // TODO: Always 8 bytes
+    pub nonce:             Option<HexFull<u64>>,
     #[serde(rename = "sha3Uncles")]
     pub uncles_hash:       U256,
     pub uncles:            Vec<U256>,
@@ -24,6 +25,7 @@ pub struct BlockHeader {
     pub gas_used:          Hex<u64>,
     pub timestamp:         Hex<u64>,
     pub transactions:      TransactionEntries,
+    pub size:              Hex<u64>,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]

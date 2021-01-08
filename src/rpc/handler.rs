@@ -1,6 +1,6 @@
 use super::{
     types::{
-        Address, BlockHeader, BlockNumber, BloomFilter, Bytes, Hex, Log, LogFilter,
+        Address, BlockHeader, BlockNumber, BloomFilter, Bytes, GenesisConfig, Hex, Log, LogFilter,
         TransactionReceipt,
     },
     EthereumRpc,
@@ -39,10 +39,16 @@ impl EthereumRpc for RpcHandler {
     ) -> RpcResult<Option<BlockHeader>> {
         let mut block_header = BlockHeader::default();
         block_header.logs_bloom = Some(BloomFilter::default());
-        block_header.number = Some(42.into());
-        block_header.nonce = Some(23.into());
+        block_header.number = Some(1.into());
+        block_header.nonce = Some(0.into());
         block_header.hash = Some(U256::zero());
+        block_header.mix_hash = Some(U256::zero());
+        block_header.extra_data = vec![0x42_u8].into();
         Ok(Some(block_header))
+    }
+
+    fn get_block_by_hash(&self, _block_hash: U256, full: bool) -> RpcResult<Option<BlockHeader>> {
+        self.get_block_by_number(BlockNumber::Number(0), full)
     }
 
     fn get_nonce(&self, _address: Address, _block_number: BlockNumber) -> RpcResult<Hex<u64>> {
@@ -95,5 +101,13 @@ impl EthereumRpc for RpcHandler {
 
     fn evm_lock_unknown_account(&self, _address: Address) -> RpcResult<bool> {
         todo!()
+    }
+
+    fn test_set_chain_params(&self, _genesis: GenesisConfig) -> RpcResult<bool> {
+        Ok(true)
+    }
+
+    fn test_import_raw_block(&self, _block: Bytes) -> RpcResult<U256> {
+        Ok(U256::zero())
     }
 }

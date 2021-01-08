@@ -1,5 +1,6 @@
 use super::types::{
-    Address, BlockHeader, BlockNumber, Bytes, CallRequest, Hex, Log, LogFilter, TransactionReceipt,
+    Address, BlockHeader, BlockNumber, Bytes, CallRequest, GenesisConfig, Hex, Log, LogFilter,
+    TransactionReceipt,
 };
 use crate::prelude::*;
 use jsonrpc_core::Result as RpcResult;
@@ -25,6 +26,10 @@ pub trait EthereumRpc {
         block_number: BlockNumber,
         full: bool,
     ) -> RpcResult<Option<BlockHeader>>;
+
+    /// See <https://eth.wiki/json-rpc/API#eth_getblockbyhash>
+    #[rpc(name = "eth_getBlockByHash")]
+    fn get_block_by_hash(&self, block_hash: U256, full: bool) -> RpcResult<Option<BlockHeader>>;
 
     #[rpc(name = "eth_gasPrice")]
     fn gas_price(&self) -> RpcResult<Hex<U256>>;
@@ -76,4 +81,14 @@ pub trait EthereumRpc {
 
     #[rpc(name = "evm_lockUnknownAccount")]
     fn evm_lock_unknown_account(&self, address: Address) -> RpcResult<bool>;
+
+    // Ethereum Test
+    //
+    // See <https://github.com/ethereum/retesteth/wiki/RPC-Methods>
+
+    #[rpc(name = "test_setChainParams")]
+    fn test_set_chain_params(&self, genesis: GenesisConfig) -> RpcResult<bool>;
+
+    #[rpc(name = "test_importRawBlock")]
+    fn test_import_raw_block(&self, block: Bytes) -> RpcResult<U256>;
 }
