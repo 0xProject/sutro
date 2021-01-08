@@ -7,7 +7,10 @@ mod block_number;
 mod bloom_filter;
 mod bytes;
 mod call;
+mod genesis_config;
 mod hex;
+mod hex_full;
+mod hexable;
 mod log;
 mod log_filter;
 mod transaction;
@@ -21,7 +24,10 @@ pub use self::{
     bloom_filter::BloomFilter,
     bytes::Bytes,
     call::CallRequest,
+    genesis_config::GenesisConfig,
     hex::Hex,
+    hex_full::HexFull,
+    hexable::Hexable,
     log::{Log, LogBlock},
     log_filter::LogFilter,
     transaction::Transaction,
