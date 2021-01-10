@@ -63,7 +63,7 @@ macro_rules! fixed_length_serde {
                         type Value = [u8; $length];
 
                         fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                            formatter.write_str("32 bytes")
+                            formatter.write_str("bytes")
                         }
 
                         fn visit_bytes<E>(self, value: &[u8]) -> Result<Self::Value, E>
@@ -71,7 +71,7 @@ macro_rules! fixed_length_serde {
                             E: de::Error,
                         {
                             if value.len() != $length {
-                                Err(de::Error::invalid_length(value.len(), &"expected 32 bytes"))
+                                Err(de::Error::invalid_length(value.len(), &"expected bytes"))
                             } else {
                                 let mut result = [0; $length];
                                 result.copy_from_slice(value);
