@@ -1,54 +1,50 @@
 use crate::prelude::*;
-use rlp::Encodable;
+use rlp::{Decodable, Encodable};
 use serde::{de, ser};
-use std::fmt::{self, Debug};
+use std::{fmt, fmt::Debug};
 
+/// Ethereum address
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
-pub struct Bytes(Vec<u8>);
+pub struct Address([u8; 20]);
 
-impl Debug for Bytes {
+impl Debug for Address {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "Bytes(hex!(\"{}\").to_vec())",
-            hex::encode(self.0.as_slice())
-        )
+        write!(f, "Address(hex!(\"{}\"))", hex::encode(self.0))
     }
 }
 
-impl From<Vec<u8>> for Bytes {
-    fn from(value: Vec<u8>) -> Self {
-        Self(value)
-    }
-}
-
-impl Encodable for Bytes {
+impl Encodable for Address {
     fn rlp_append(&self, s: &mut rlp::RlpStream) {
-        s.append(&self.0.as_slice());
+        let slice: &[u8] = &self.0;
+        s.append(&slice);
     }
 }
 
-impl Serialize for Bytes {
+/// # To do
+///
+/// * Add check sum
+impl Serialize for Address {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: ser::Serializer,
     {
+        // TODO: Add checksum
         // OPT: Avoid allocations
-        serializer.serialize_str(&format!("0x{}", hex::encode(&self.0)))
+        serializer.serialize_str(&format!("0x{}", hex::encode(self.0)))
     }
 }
 
-impl<'de> Deserialize<'de> for Bytes {
+impl<'de> Deserialize<'de> for Address {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         struct Visitor;
         impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Bytes;
+            type Value = Address;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                write!(formatter, "a hexadecimal string")
+                write!(formatter, "a hexadecimal address string")
             }
 
             fn visit_str<E>(self, str: &str) -> Result<Self::Value, E>
@@ -56,8 +52,9 @@ impl<'de> Deserialize<'de> for Bytes {
                 E: de::Error,
             {
                 let str = str.strip_prefix("0x").unwrap_or(str);
-                let vec = hex::decode(str).map_err::<E, _>(de::Error::custom)?;
-                Ok(Bytes(vec))
+                let mut buffer = [0_u8; 20];
+                hex::decode_to_slice(str, &mut buffer).map_err::<E, _>(de::Error::custom)?;
+                Ok(Address(buffer))
             }
         }
         deserializer.deserialize_str(Visitor)
@@ -72,19 +69,10 @@ mod test {
 
     #[test]
     fn test_serialize_default() {
-        let obj = Bytes::default();
+        let obj = Address::default();
         let json = to_value(&obj).unwrap();
-        assert_eq!(&json, &json!("0x"));
-        let de: Bytes = from_value(json).unwrap();
-        assert_eq!(de, obj);
-    }
-
-    #[test]
-    fn test_serialize_random() {
-        let obj = Bytes(b"random".to_vec());
-        let json = to_value(&obj).unwrap();
-        assert_eq!(&json, &json!("0x72616e646f6d"));
-        let de: Bytes = from_value(json).unwrap();
+        assert_eq!(&json, &json!("0x0000000000000000000000000000000000000000"));
+        let de: Address = from_value(json).unwrap();
         assert_eq!(de, obj);
     }
 }

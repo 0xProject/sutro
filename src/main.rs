@@ -19,12 +19,14 @@ pub mod prelude {
     pub use rand::prelude::*;
     pub use rayon::prelude::*;
     pub use serde::{Deserialize, Serialize};
+    pub use smallvec::{smallvec, SmallVec};
     pub use thiserror::Error;
     pub use tokio::io::{
         AsyncBufRead, AsyncBufReadExt as _, AsyncRead, AsyncReadExt as _, AsyncSeekExt as _,
         AsyncWrite, AsyncWriteExt as _,
     };
     pub use tracing::{debug, error, info, trace, warn};
+    pub use zkp_macros_decl::u256h;
     pub use zkp_u256::{Binary as _, One as _, Pow as _, Zero as _, U256};
 }
 

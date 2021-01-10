@@ -9,6 +9,7 @@ mod empty;
 mod fork;
 mod rpc_chain;
 mod state_set;
+pub mod types;
 
 pub use self::{cache::Cache, empty::Empty, fork::Fork, rpc_chain::RpcChain, state_set::StateSet};
 
