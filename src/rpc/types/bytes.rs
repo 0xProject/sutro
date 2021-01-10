@@ -33,8 +33,12 @@ impl Serialize for Bytes {
     where
         S: ser::Serializer,
     {
-        // OPT: Avoid allocations
-        serializer.serialize_str(&format!("0x{}", hex::encode(&self.0)))
+        if serializer.is_human_readable() {
+            // OPT: Avoid allocations
+            serializer.serialize_str(&format!("0x{}", hex::encode(&self.0)))
+        } else {
+            serializer.serialize_bytes(self.0.as_slice())
+        }
     }
 }
 

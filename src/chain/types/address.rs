@@ -28,9 +28,13 @@ impl Serialize for Address {
     where
         S: ser::Serializer,
     {
-        // TODO: Add checksum
-        // OPT: Avoid allocations
-        serializer.serialize_str(&format!("0x{}", hex::encode(self.0)))
+        if serializer.is_human_readable() {
+            // TODO: Add checksum
+            // OPT: Avoid allocations
+            serializer.serialize_str(&format!("0x{}", hex::encode(self.0)))
+        } else {
+            serializer.serialize_bytes(&self.0)
+        }
     }
 }
 
