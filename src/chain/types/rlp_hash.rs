@@ -1,4 +1,4 @@
-use crate::{evm::precompiles::keccak256, prelude::*, serde_rlp::to_rlp};
+use crate::{evm::precompiles::keccak256, prelude::*, serde::rlp::to_rlp};
 
 pub trait RlpHash {
     fn rlp_hash(&self) -> U256;

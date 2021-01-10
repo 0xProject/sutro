@@ -192,8 +192,7 @@ impl<'a> serde::Serializer for &'a mut Serializer {
     where
         T: Serialize,
     {
-        todo!();
-        Err(Error::UnsupportedType)
+        value.serialize(self)
     }
 
     fn serialize_newtype_variant<T: ?Sized>(

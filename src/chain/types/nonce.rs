@@ -1,5 +1,4 @@
-use crate::prelude::*;
-use rlp::{Encodable, RlpStream};
+use crate::{prelude::*, serde::fixed8};
 use serde::{de, ser};
 use std::{fmt, fmt::Debug};
 
@@ -36,63 +35,17 @@ impl Serialize for Nonce {
     where
         S: ser::Serializer,
     {
-        if serializer.is_human_readable() {
-            serializer.serialize_str(&format!("{:#016x}", self.0))
-        } else {
-            serializer.serialize_bytes(&self.0.to_be_bytes())
-        }
+        fixed8::serialize(&self.0.to_be_bytes(), serializer)
     }
 }
 
 impl<'de> Deserialize<'de> for Nonce {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: de::Deserializer<'de>,
     {
-        if deserializer.is_human_readable() {
-            struct Visitor;
-            impl<'de> de::Visitor<'de> for Visitor {
-                type Value = Nonce;
-
-                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                    write!(formatter, "a hexadecimal number string")
-                }
-
-                fn visit_str<E>(self, str: &str) -> Result<Self::Value, E>
-                where
-                    E: de::Error,
-                {
-                    // Silently accept hex without prefix
-                    let str = str.strip_prefix("0x").unwrap_or(str);
-                    let n = u64::from_str_radix(str, 16).map_err(E::custom)?;
-                    Ok(Nonce(n))
-                }
-            }
-            deserializer.deserialize_str(Visitor)
-        } else {
-            struct Visitor;
-            impl<'de> de::Visitor<'de> for Visitor {
-                type Value = Nonce;
-
-                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                    write!(formatter, "one to eight bytes")
-                }
-
-                fn visit_bytes<E>(self, b: &[u8]) -> Result<Self::Value, E>
-                where
-                    E: de::Error,
-                {
-                    // Silently accept b.len() == 0
-                    if b.len() > 8 {
-                        return Err(E::custom("number too large"));
-                    }
-                    let mut bytes = [0_u8; 8];
-                    let zeros = 8 - b.len();
-                    bytes[zeros..].copy_from_slice(b);
-                    Ok(Nonce(u64::from_be_bytes(bytes)))
-                }
-            }
-            deserializer.deserialize_bytes(Visitor)
-        }
+        fixed8::deserialize(deserializer)
+            .map(u64::from_be_bytes)
+            .map(Nonce::from)
     }
 }

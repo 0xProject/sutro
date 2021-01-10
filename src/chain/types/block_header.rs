@@ -28,10 +28,9 @@ pub struct BlockHeader {
 
 #[cfg(test)]
 mod test {
-    use super::*;
+    use super::{super::rlp_hash, *};
     use crate::{
-        evm::precompiles::keccak256,
-        serde_rlp::{from_rlp, to_rlp},
+        serde::rlp::{from_rlp, to_rlp},
         test::prelude::assert_eq,
     };
     use serde_json::{from_value, json, to_value, Value as JsonValue};
