@@ -47,24 +47,43 @@ impl<'de> Deserialize<'de> for Bytes {
     where
         D: serde::Deserializer<'de>,
     {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Bytes;
+        if deserializer.is_human_readable() {
+            struct Visitor;
+            impl<'de> de::Visitor<'de> for Visitor {
+                type Value = Bytes;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                write!(formatter, "a hexadecimal string")
-            }
+                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    write!(formatter, "a hexadecimal string")
+                }
 
-            fn visit_str<E>(self, str: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                let str = str.strip_prefix("0x").unwrap_or(str);
-                let vec = hex::decode(str).map_err::<E, _>(de::Error::custom)?;
-                Ok(Bytes(vec))
+                fn visit_str<E>(self, str: &str) -> Result<Self::Value, E>
+                where
+                    E: de::Error,
+                {
+                    let str = str.strip_prefix("0x").unwrap_or(str);
+                    let vec = hex::decode(str).map_err::<E, _>(de::Error::custom)?;
+                    Ok(Bytes(vec))
+                }
             }
+            deserializer.deserialize_str(Visitor)
+        } else {
+            struct Visitor;
+            impl<'de> de::Visitor<'de> for Visitor {
+                type Value = Bytes;
+
+                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    write!(formatter, "bytes")
+                }
+
+                fn visit_bytes<E>(self, b: &[u8]) -> Result<Self::Value, E>
+                where
+                    E: de::Error,
+                {
+                    Ok(b.to_vec().into())
+                }
+            }
+            deserializer.deserialize_bytes(Visitor)
         }
-        deserializer.deserialize_str(Visitor)
     }
 }
 

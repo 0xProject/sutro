@@ -87,25 +87,50 @@ impl<'de> Deserialize<'de> for Address {
     where
         D: serde::Deserializer<'de>,
     {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = Address;
+        if deserializer.is_human_readable() {
+            struct Visitor;
+            impl<'de> de::Visitor<'de> for Visitor {
+                type Value = Address;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                write!(formatter, "a hexadecimal address string")
-            }
+                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    write!(formatter, "a hexadecimal address string")
+                }
 
-            fn visit_str<E>(self, str: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                let str = str.strip_prefix("0x").unwrap_or(str);
-                let mut buffer = [0_u8; 20];
-                hex::decode_to_slice(str, &mut buffer).map_err::<E, _>(de::Error::custom)?;
-                Ok(Address(buffer))
+                fn visit_str<E>(self, str: &str) -> Result<Self::Value, E>
+                where
+                    E: de::Error,
+                {
+                    let str = str.strip_prefix("0x").unwrap_or(str);
+                    let mut buffer = [0_u8; 20];
+                    hex::decode_to_slice(str, &mut buffer).map_err::<E, _>(de::Error::custom)?;
+                    Ok(Address(buffer))
+                }
             }
+            deserializer.deserialize_str(Visitor)
+        } else {
+            struct Visitor;
+            impl<'de> de::Visitor<'de> for Visitor {
+                type Value = Address;
+
+                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    write!(formatter, "20 bytes")
+                }
+
+                fn visit_bytes<E>(self, b: &[u8]) -> Result<Self::Value, E>
+                where
+                    E: de::Error,
+                {
+                    // Silently accept b.len() == 0
+                    if b.len() != 20 {
+                        return Err(E::custom("expecting 20 bytes"));
+                    }
+                    let mut bytes = [0_u8; 20];
+                    bytes.copy_from_slice(b);
+                    Ok(bytes.into())
+                }
+            }
+            deserializer.deserialize_bytes(Visitor)
         }
-        deserializer.deserialize_str(Visitor)
     }
 }
 

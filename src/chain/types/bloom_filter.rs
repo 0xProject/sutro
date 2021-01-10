@@ -12,6 +12,12 @@ impl BloomFilter {
     }
 }
 
+impl From<[u8; 256]> for BloomFilter {
+    fn from(value: [u8; 256]) -> Self {
+        Self(value)
+    }
+}
+
 impl Default for BloomFilter {
     fn default() -> Self {
         Self::empty()
@@ -50,24 +56,49 @@ impl<'de> Deserialize<'de> for BloomFilter {
     where
         D: serde::Deserializer<'de>,
     {
-        struct Visitor;
-        impl<'de> de::Visitor<'de> for Visitor {
-            type Value = BloomFilter;
+        if deserializer.is_human_readable() {
+            struct Visitor;
+            impl<'de> de::Visitor<'de> for Visitor {
+                type Value = BloomFilter;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                write!(formatter, "a hexadecimal bloom filter string")
-            }
+                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    write!(formatter, "a hexadecimal bloom filter string")
+                }
 
-            fn visit_str<E>(self, str: &str) -> Result<Self::Value, E>
-            where
-                E: de::Error,
-            {
-                let str = str.strip_prefix("0x").unwrap_or(str);
-                let mut buffer = [0_u8; 256];
-                hex::decode_to_slice(str, &mut buffer).map_err::<E, _>(de::Error::custom)?;
-                Ok(BloomFilter(buffer))
+                fn visit_str<E>(self, str: &str) -> Result<Self::Value, E>
+                where
+                    E: de::Error,
+                {
+                    let str = str.strip_prefix("0x").unwrap_or(str);
+                    let mut buffer = [0_u8; 256];
+                    hex::decode_to_slice(str, &mut buffer).map_err::<E, _>(de::Error::custom)?;
+                    Ok(BloomFilter(buffer))
+                }
             }
+            deserializer.deserialize_str(Visitor)
+        } else {
+            struct Visitor;
+            impl<'de> de::Visitor<'de> for Visitor {
+                type Value = BloomFilter;
+
+                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    write!(formatter, "256 bytes")
+                }
+
+                fn visit_bytes<E>(self, b: &[u8]) -> Result<Self::Value, E>
+                where
+                    E: de::Error,
+                {
+                    // Silently accept b.len() == 0
+                    if b.len() != 256 {
+                        return Err(E::custom("expecting 256 bytes"));
+                    }
+                    let mut bytes = [0_u8; 256];
+                    bytes.copy_from_slice(b);
+                    Ok(bytes.into())
+                }
+            }
+            deserializer.deserialize_bytes(Visitor)
         }
-        deserializer.deserialize_str(Visitor)
     }
 }
