@@ -8,6 +8,7 @@
 mod chain;
 mod evm;
 mod rpc;
+mod serde_rlp;
 mod server;
 
 pub mod prelude {

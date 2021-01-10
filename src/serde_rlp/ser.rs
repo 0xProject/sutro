@@ -1,26 +1,16 @@
+use super::Error;
 use serde::{ser, ser::Impossible, Serialize};
 
-#[derive(Clone, Debug)]
-pub enum Error {
-    UnsupportedType,
-    Custom(String),
-}
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-
-impl std::error::Error for Error {}
-
-impl serde::ser::Error for Error {
-    fn custom<T>(msg: T) -> Self
-    where
-        T: std::fmt::Display,
-    {
-        Self::Custom(msg.to_string())
-    }
+pub fn to_rlp<T>(value: &T) -> Result<Vec<u8>, Error>
+where
+    T: Serialize,
+{
+    let mut serializer = Serializer {
+        output: vec![Vec::new()],
+    };
+    value.serialize(&mut serializer)?;
+    assert_eq!(serializer.output.len(), 1);
+    Ok(serializer.output.pop().unwrap())
 }
 
 pub struct Serializer {
@@ -54,18 +44,6 @@ impl Serializer {
             }
         }
     }
-}
-
-pub fn to_rlp<T>(value: &T) -> Result<Vec<u8>, Error>
-where
-    T: Serialize,
-{
-    let mut serializer = Serializer {
-        output: vec![Vec::new()],
-    };
-    value.serialize(&mut serializer)?;
-    assert_eq!(serializer.output.len(), 1);
-    Ok(serializer.output.pop().unwrap())
 }
 
 impl<'a> serde::Serializer for &'a mut Serializer {

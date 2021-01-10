@@ -3,12 +3,18 @@ use rlp::{Encodable, RlpStream};
 use serde::{de, ser};
 use std::{fmt, fmt::Debug};
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, PartialOrd, Eq, Ord, Clone)]
 pub struct BloomFilter([u8; 256]);
+
+impl BloomFilter {
+    pub fn empty() -> Self {
+        Self([0; 256])
+    }
+}
 
 impl Default for BloomFilter {
     fn default() -> Self {
-        Self([0; 256])
+        Self::empty()
     }
 }
 
