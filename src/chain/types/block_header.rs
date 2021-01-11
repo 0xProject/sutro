@@ -1,5 +1,9 @@
-use super::{Address, BloomFilter, Number, RlpHash};
-use crate::{prelude::*, rpc::types::Bytes, serde::fixed_u64};
+use super::{Address, BloomFilter};
+use crate::{
+    prelude::*,
+    rpc::types::Bytes,
+    serde::{fixed_u64, short},
+};
 
 /// Constant for the current block
 /// See <https://ethereum.github.io/yellowpaper/paper.pdf>
@@ -16,21 +20,25 @@ pub struct BlockHeader {
     pub transactions_root: U256,
     pub receipts_root:     U256,
     pub logs_bloom:        BloomFilter,
-    pub difficulty:        Number,
-    pub number:            Number,
-    pub gas_limit:         Number,
-    pub gas_used:          Number,
-    pub timestamp:         Number,
+    #[serde(with = "short")]
+    pub difficulty:        u64,
+    #[serde(with = "short")]
+    pub number:            u64,
+    #[serde(with = "short")]
+    pub gas_limit:         u64,
+    #[serde(with = "short")]
+    pub gas_used:          u64,
+    #[serde(with = "short")]
+    pub timestamp:         u64,
     pub extra_data:        Bytes, // 32 bytes or less.
     pub mix_hash:          U256,
-
     #[serde(with = "fixed_u64")]
-    pub nonce: u64,
+    pub nonce:             u64,
 }
 
 #[cfg(test)]
 mod test {
-    use super::{super::rlp_hash, *};
+    use super::{super::rlp_hash::RlpHash as _, *};
     use crate::{
         serde::rlp::{from_rlp, to_rlp},
         test::prelude::assert_eq,
@@ -56,11 +64,11 @@ mod test {
                 "56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
             ),
             logs_bloom:        BloomFilter::empty(),
-            difficulty:        17179869184.into(),
-            number:            0.into(),
-            gas_limit:         5000.into(),
-            gas_used:          0.into(),
-            timestamp:         0.into(),
+            difficulty:        17179869184,
+            number:            0,
+            gas_limit:         5000,
+            gas_used:          0,
+            timestamp:         0,
             extra_data:        Bytes::from(
                 hex!("11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa").to_vec(),
             ),

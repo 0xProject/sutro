@@ -1,8 +1,8 @@
 mod fixed;
 pub mod rlp;
+pub mod short;
 
 pub use self::fixed::*;
-
 pub mod fixed_u64 {
     use super::fixed8;
     use serde::{de, ser};
