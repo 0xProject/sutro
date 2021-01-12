@@ -42,7 +42,6 @@ mod test {
     use crate::{
         serde::rlp::{from_rlp, to_rlp},
         test::prelude::assert_eq,
-        utils::rlp,
     };
     use serde_json::{from_value, json, to_value, Value as JsonValue};
 

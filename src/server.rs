@@ -13,9 +13,12 @@ async fn chain(url: String) -> AnyResult<()> {
     use crate::chain::ChainState;
 
     // Create a forked chain
-    let chain = crate::chain::fork(&url).await.context("Forking chain")?;
-    let block = chain.block();
-    info!("Block info: {:#?}", block);
+    // let chain = crate::chain::fork(&url).await.context("Forking chain")?;
+    // let block = chain.block();
+    // info!("Block info: {:#?}", block);
+
+    // Create an empty chain
+    let chain = crate::chain::new();
 
     // Create an RPC server
     let rpc_handler = rpc::RpcHandler {

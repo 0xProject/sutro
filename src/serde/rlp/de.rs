@@ -177,11 +177,8 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: de::Visitor<'de>,
     {
-        dbg!(hex::encode(self.input));
         let bytes = self.parse_bytes()?;
-        dbg!(hex::encode(bytes));
         let str = std::str::from_utf8(bytes)?;
-        dbg!(str);
         visitor.visit_str(str)
     }
 
@@ -342,23 +339,12 @@ impl<'de, 'a> de::SeqAccess<'de> for SeqAccess<'de, 'a> {
     where
         T: de::DeserializeSeed<'de>,
     {
-        dbg!(self.length, self.deserializer.input.len());
-        let done = if let Some(length) = self.length {
-            if length > 0 {
-                self.length = Some(length - 1);
-                false
-            } else {
-                true
-            }
-        } else {
-            self.deserializer.input.is_empty()
-        };
-        dbg!(done);
-        if done {
-            Ok(None)
-        } else {
+        if self.length.unwrap_or(self.deserializer.input.len()) > 0 {
+            self.length = self.length.map(|n| n - 1);
             let value = de::DeserializeSeed::deserialize(seed, &mut *self.deserializer)?;
             Ok(Some(value))
+        } else {
+            Ok(None)
         }
     }
 

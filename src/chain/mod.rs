@@ -41,6 +41,11 @@ pub trait WriteableChainState: ChainState {
     fn set_storage(&mut self, address: &U256, slot: &U256, value: &U256);
 }
 
+/// Create an empty chain
+pub async fn new() -> AnyResult<Fork<Empty>> {
+    Ok(Fork::from(Empty))
+}
+
 /// Create a fork from a JSON-RPC URL.
 pub async fn fork(url: &str) -> AnyResult<Fork<Cache<RpcChain>>> {
     let client = rpc::client(url)
