@@ -2,7 +2,7 @@ use super::{Address, BloomFilter};
 use crate::{
     prelude::*,
     rpc::types::Bytes,
-    serde::{fixed_u64, short},
+    serde::{fixed_u64, short_u64},
 };
 
 /// Constant for the current block
@@ -20,17 +20,17 @@ pub struct BlockHeader {
     pub transactions_root: U256,
     pub receipts_root:     U256,
     pub logs_bloom:        BloomFilter,
-    #[serde(with = "short")]
+    #[serde(with = "short_u64")]
     pub difficulty:        u64,
-    #[serde(with = "short")]
+    #[serde(with = "short_u64")]
     pub number:            u64,
-    #[serde(with = "short")]
+    #[serde(with = "short_u64")]
     pub gas_limit:         u64,
-    #[serde(with = "short")]
+    #[serde(with = "short_u64")]
     pub gas_used:          u64,
-    #[serde(with = "short")]
+    #[serde(with = "short_u64")]
     pub timestamp:         u64,
-    pub extra_data:        Bytes, // 32 bytes or less.
+    pub extra_data:        Bytes, // 32 bytes or less. TODO: Tinyvec
     pub mix_hash:          U256,
     #[serde(with = "fixed_u64")]
     pub nonce:             u64,

@@ -5,7 +5,7 @@ use super::{
     },
     EthereumRpc,
 };
-use crate::prelude::*;
+use crate::{prelude::*, serde::rlp::to_rlp};
 use jsonrpc_core::Result as RpcResult;
 
 #[allow(clippy::module_name_repetitions)]
@@ -108,11 +108,21 @@ impl EthereumRpc for RpcHandler {
     }
 
     fn test_import_raw_block(&self, bytes: Bytes) -> RpcResult<U256> {
+        dbg!(&bytes);
         let block =
             crate::serde::rlp::from_rlp::<crate::chain::types::Block>(bytes.0.as_slice()).unwrap();
-        dbg!(&block);
-        dbg!(block.transactions.rlp_hash());
-        dbg!(block.ommers.rlp_hash());
+        debug!("Block: {:#?}", &block);
+        debug!("Tx hash = {:?}", block.transactions.rlp_hash());
+        debug!("Ommer hash = {:?}", block.ommers.rlp_hash());
+
+        let tx0 = &block.transactions[0];
+        let tx0_rlp = to_rlp(tx0).unwrap();
+        dbg!(hex::encode(&tx0_rlp));
+        let mut map = std::collections::HashMap::new();
+        map.insert(vec![0x80_u8], tx0_rlp);
+        let (root, _) = trie::build(&map);
+        dbg!(root);
+
         Ok(U256::zero())
     }
 

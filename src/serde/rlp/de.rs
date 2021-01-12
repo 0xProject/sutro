@@ -62,13 +62,11 @@ impl<'de> Deserializer<'de> {
             b if b <= 0xf7 => self.read((b - 0xc0) as usize),
             b => {
                 let prefix = self.read((b - 0xf7) as usize)?;
-                dbg!(&prefix);
                 let length = {
                     let mut buffer = [0; 8];
                     buffer[(8 - prefix.len())..].copy_from_slice(prefix);
                     u64::from_be_bytes(buffer) as usize
                 };
-                dbg!(&length);
                 self.read(length)
             }
         }
@@ -259,7 +257,6 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         V: de::Visitor<'de>,
     {
         let slice = self.parse_list()?;
-        dbg!(hex::encode(slice));
         let mut inner = Deserializer { input: slice };
         let result = visitor.visit_seq(SeqAccess {
             deserializer: &mut inner,

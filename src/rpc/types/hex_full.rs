@@ -39,7 +39,6 @@ impl<T: Hexable> Serialize for HexFull<T> {
         let hex_str = self.as_ref().to_hex();
         let nibbles = &hex_str[2..];
         let target = T::nibbles();
-        dbg!(&target, nibbles.len());
         let padding = target - nibbles.len();
         let mut result = String::from("0x");
         result.extend(std::iter::repeat('0').take(padding));
