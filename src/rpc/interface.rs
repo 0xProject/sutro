@@ -91,4 +91,13 @@ pub trait EthereumRpc {
 
     #[rpc(name = "test_importRawBlock")]
     fn test_import_raw_block(&self, block: Bytes) -> RpcResult<U256>;
+
+    // Geth debug extensions
+    //
+    // See <https://geth.ethereum.org/docs/rpc/ns-debug>
+
+    /// Note: Result by geth does not contain the `0x` prefix. The `Bytes` type
+    /// will accept both with and without, but will always encode with.
+    #[rpc(name = "debug_getBlockRlp")]
+    fn get_block_rlp(&self, block_number: u64) -> RpcResult<Bytes>;
 }

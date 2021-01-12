@@ -4,7 +4,7 @@ use serde::{de, ser};
 use std::fmt::{self, Debug};
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
-pub struct Bytes(Vec<u8>);
+pub struct Bytes(pub Vec<u8>);
 
 impl Debug for Bytes {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

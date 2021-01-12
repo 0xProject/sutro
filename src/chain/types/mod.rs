@@ -1,8 +1,10 @@
 mod address;
+mod block;
 mod block_header;
 mod bloom_filter;
-mod rlp_hash;
+mod transaction;
 
 pub use self::{
-    address::Address, block_header::BlockHeader, bloom_filter::BloomFilter, rlp_hash::RlpHash,
+    address::Address, block::Block, block_header::BlockHeader, bloom_filter::BloomFilter,
+    transaction::Transaction,
 };

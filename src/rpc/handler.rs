@@ -107,7 +107,16 @@ impl EthereumRpc for RpcHandler {
         Ok(true)
     }
 
-    fn test_import_raw_block(&self, _block: Bytes) -> RpcResult<U256> {
+    fn test_import_raw_block(&self, bytes: Bytes) -> RpcResult<U256> {
+        let block =
+            crate::serde::rlp::from_rlp::<crate::chain::types::Block>(bytes.0.as_slice()).unwrap();
+        dbg!(&block);
+        dbg!(block.transactions.rlp_hash());
+        dbg!(block.ommers.rlp_hash());
         Ok(U256::zero())
+    }
+
+    fn get_block_rlp(&self, block_number: u64) -> RpcResult<Bytes> {
+        todo!()
     }
 }

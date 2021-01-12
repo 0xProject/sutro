@@ -1,14 +1,18 @@
-use super::{Command, Options};
+use super::{fetch::fetch, Command, Options};
 use crate::{prelude::*, rpc};
 
 pub(super) async fn async_main(options: Options) -> AnyResult<()> {
+    match options.command {
+        Some(Command::Fetch { node, file }) => fetch(node, file).await,
+        Some(Command::Chain { fork }) => chain(fork).await,
+        None => unimplemented!(),
+    }
+}
+
+async fn chain(url: String) -> AnyResult<()> {
     use crate::chain::ChainState;
 
     // Create a forked chain
-    let url = match options.command {
-        Some(Command::Chain { fork }) => Ok(fork),
-        _ => Err(anyhow!("Unexpected subcommand")),
-    }?;
     let chain = crate::chain::fork(&url).await.context("Forking chain")?;
     let block = chain.block();
     info!("Block info: {:#?}", block);

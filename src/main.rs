@@ -7,6 +7,7 @@
 
 mod chain;
 mod evm;
+mod fetch;
 mod rpc;
 mod serde;
 mod server;
@@ -35,7 +36,10 @@ pub mod prelude {
 use crate::prelude::*;
 use once_cell::sync::OnceCell;
 use rand_pcg::Mcg128Xsl64;
-use std::sync::{Mutex, MutexGuard};
+use std::{
+    path::PathBuf,
+    sync::{Mutex, MutexGuard},
+};
 use structopt::StructOpt;
 use tracing_subscriber::FmtSubscriber;
 
@@ -74,6 +78,17 @@ enum Command {
         /// Underlying JSON-RPC url to fork from
         #[structopt(long, default_value = "http://localhost:8545")]
         fork: String,
+    },
+
+    /// Fetch a chain
+    Fetch {
+        /// JSON-RPC url to fetch from
+        #[structopt(long, default_value = "http://localhost:8545")]
+        node: String,
+
+        /// File to store blocks in
+        #[structopt(long, default_value = "blocks.rlp")]
+        file: PathBuf,
     },
 }
 
