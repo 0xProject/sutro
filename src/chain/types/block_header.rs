@@ -2,7 +2,7 @@ use super::{Address, BloomFilter};
 use crate::{
     prelude::*,
     rpc::types::Bytes,
-    serde::{fixed_u64, short_u64},
+    serde::{fixed_u256, fixed_u64, short_u64},
 };
 
 /// Constant for the current block
@@ -11,13 +11,17 @@ use crate::{
 #[derive(Clone, Default, PartialEq, PartialOrd, Eq, Ord, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BlockHeader {
+    #[serde(with = "fixed_u256")]
     pub parent_hash:       U256,
-    #[serde(rename = "sha3Uncles")]
+    #[serde(rename = "sha3Uncles", with = "fixed_u256")]
     pub ommers_hash:       U256,
     #[serde(rename = "miner")]
     pub beneficiary:       Address,
+    #[serde(with = "fixed_u256")]
     pub state_root:        U256,
+    #[serde(with = "fixed_u256")]
     pub transactions_root: U256,
+    #[serde(with = "fixed_u256")]
     pub receipts_root:     U256,
     pub logs_bloom:        BloomFilter,
     #[serde(with = "short_u64")]
@@ -31,6 +35,7 @@ pub struct BlockHeader {
     #[serde(with = "short_u64")]
     pub timestamp:         u64,
     pub extra_data:        Bytes, // 32 bytes or less. TODO: Tinyvec
+    #[serde(with = "fixed_u256")]
     pub mix_hash:          U256,
     #[serde(with = "fixed_u64")]
     pub nonce:             u64,
