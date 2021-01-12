@@ -10,9 +10,10 @@ mod evm;
 mod rpc;
 mod serde;
 mod server;
+mod utils;
 
 pub mod prelude {
-    pub use crate::require;
+    pub use crate::{require, utils::RlpHash as _};
     pub use anyhow::{anyhow, Context as _, Result as AnyResult};
     pub use futures::prelude::*;
     pub use hex_literal::hex;

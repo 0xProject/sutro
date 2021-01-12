@@ -1,52 +1,78 @@
+/// Serde RLP serialization
+///
+/// There is no obvious single-pass way to serialize to RLP, especially
+/// when data is deeply nested. Instead we use a stack of lists.
+///
+/// OPT: Consider alternative strategies, like
+///   A) a single buffer with one or more fixup-passes through the output.
+///   B) multiple passes through the data to compute the length first.
+/// I suspect option B is faster and preferred since it reads less (only lengths
+/// of fields are required) and writes much less (no moving data around). In
+/// fact it could be done without allocations altogether.
 use super::Error;
+use crate::prelude::*;
 use serde::{ser, ser::Impossible, Serialize};
+use std::io::Write;
 
 pub fn to_rlp<T>(value: &T) -> Result<Vec<u8>, Error>
 where
     T: Serialize,
 {
-    let mut serializer = Serializer {
-        output: vec![Vec::new()],
-    };
+    let mut serializer = Serializer::new(Vec::<u8>::new());
     value.serialize(&mut serializer)?;
-    assert_eq!(serializer.output.len(), 1);
-    Ok(serializer.output.pop().unwrap())
+    Ok(serializer.finish()?)
 }
 
-pub struct Serializer {
-    output: Vec<Vec<u8>>,
+pub struct Serializer<W: Write> {
+    output: W,
+    stack:  Vec<Vec<u8>>,
 }
 
-impl Serializer {
-    fn top(&mut self) -> &mut Vec<u8> {
-        self.output.last_mut().unwrap()
+impl<W: Write> Serializer<W> {
+    pub fn new(output: W) -> Self {
+        Self {
+            output,
+            stack: Vec::new(),
+        }
+    }
+
+    pub fn finish(mut self) -> Result<W, Error> {
+        require!(self.stack.is_empty(), Error::InvalidSerialization);
+        self.output.flush()?;
+        Ok(self.output)
+    }
+
+    fn write(&mut self, bytes: &[u8]) -> Result<(), Error> {
+        if let Some(vec) = self.stack.last_mut() {
+            vec.extend_from_slice(bytes);
+        } else {
+            self.output.write_all(bytes)?;
+        }
+        Ok(())
     }
 
     fn push(&mut self) {
-        self.output.push(Vec::new());
+        self.stack.push(Vec::new());
     }
 
-    fn pop(&mut self) {
-        let v = self.output.pop().unwrap();
-        match v.len() {
-            n if n <= 55 => {
-                self.top().push(0xc0 + (n as u8));
-                self.top().extend_from_slice(v.as_slice());
-            }
+    fn pop(&mut self) -> Result<(), Error> {
+        let v = self.stack.pop().unwrap();
+        match v.len() as u64 {
+            n if n <= 55 => self.write(&[0xc0 + (n as u8)])?,
             n => {
-                let n = n as u64;
                 let bytes = n.to_be_bytes();
                 let zeros = n.leading_zeros() as usize / 8;
                 let bytes = &bytes[zeros..];
-                self.top().push(0xf7 + (bytes.len() as u8));
-                self.top().extend_from_slice(bytes);
-                self.top().extend_from_slice(v.as_slice());
+                self.write(&[0xf7 + (bytes.len() as u8)])?;
+                self.write(bytes)?;
             }
         }
+        self.write(v.as_slice())?;
+        Ok(())
     }
 }
 
-impl<'a> serde::Serializer for &'a mut Serializer {
+impl<'a, W: Write> serde::Serializer for &'a mut Serializer<W> {
     type Error = Error;
     type Ok = ();
     type SerializeMap = Impossible<Self::Ok, Self::Error>;
@@ -123,25 +149,19 @@ impl<'a> serde::Serializer for &'a mut Serializer {
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        dbg!(v);
-        dbg!(v.len());
-        match v.len() {
-            0 => self.top().push(0x80),
-            1 if v[0] <= 0x7f => dbg!(self.top().push(v[0])),
-            n if n <= 55 => {
-                self.top().push(0x80 + (n as u8));
-                self.top().extend_from_slice(v);
-            }
+        match v.len() as u64 {
+            0 => self.write(&[0x80])?,
+            1 if v[0] <= 0x7f => {}
+            n if n <= 55 => self.write(&[0x80 + (n as u8)])?,
             n => {
-                let n = n as u64;
                 let bytes = n.to_be_bytes();
                 let zeros = n.leading_zeros() as usize / 8;
                 let bytes = &bytes[zeros..];
-                self.top().push(0xb7 + (bytes.len() as u8));
-                self.top().extend_from_slice(bytes);
-                self.top().extend_from_slice(v);
+                self.write(&[0xb7 + (bytes.len() as u8)])?;
+                self.write(bytes)?;
             }
         }
+        self.write(v)?;
         Ok(())
     }
 
@@ -204,10 +224,12 @@ impl<'a> serde::Serializer for &'a mut Serializer {
     }
 
     fn serialize_seq(self, _len: Option<usize>) -> Result<Self::SerializeSeq, Self::Error> {
+        self.push();
         Ok(self)
     }
 
     fn serialize_tuple(self, _len: usize) -> Result<Self::SerializeTuple, Self::Error> {
+        self.push();
         Ok(self)
     }
 
@@ -257,23 +279,24 @@ impl<'a> serde::Serializer for &'a mut Serializer {
     }
 }
 
-impl<'a> ser::SerializeSeq for &'a mut Serializer {
+impl<'a, W: Write> ser::SerializeSeq for &'a mut Serializer<W> {
     type Error = Error;
     type Ok = ();
 
-    fn serialize_element<T: ?Sized>(&mut self, _value: &T) -> Result<(), Self::Error>
+    fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
     where
         T: Serialize,
     {
-        todo!()
+        value.serialize(&mut **self)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        todo!()
+        self.pop()?;
+        Ok(())
     }
 }
 
-impl<'a> ser::SerializeStruct for &'a mut Serializer {
+impl<'a, W: Write> ser::SerializeStruct for &'a mut Serializer<W> {
     type Error = Error;
     type Ok = ();
 
@@ -289,12 +312,12 @@ impl<'a> ser::SerializeStruct for &'a mut Serializer {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        self.pop();
+        self.pop()?;
         Ok(())
     }
 }
 
-impl<'a> ser::SerializeTuple for &'a mut Serializer {
+impl<'a, W: Write> ser::SerializeTuple for &'a mut Serializer<W> {
     type Error = Error;
     type Ok = ();
 
@@ -306,6 +329,7 @@ impl<'a> ser::SerializeTuple for &'a mut Serializer {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
+        self.pop()?;
         Ok(())
     }
 }

@@ -196,9 +196,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: de::Visitor<'de>,
     {
-        dbg!(hex::encode(self.input));
         let bytes = self.parse_bytes()?;
-        dbg!(hex::encode(bytes));
         visitor.visit_bytes(bytes)
     }
 
@@ -245,50 +243,33 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         visitor.visit_newtype_struct(self)
     }
 
-    fn deserialize_seq<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_seq<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: de::Visitor<'de>,
     {
-        todo!()
+        let slice = self.parse_list()?;
+        let mut inner = Deserializer { input: slice };
+        let result = visitor.visit_seq(SeqAccess {
+            deserializer: &mut inner,
+            length:       None,
+        })?;
+        inner.finish()?;
+        Ok(result)
     }
 
     fn deserialize_tuple<V>(self, len: usize, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: de::Visitor<'de>,
     {
-        dbg!(len);
-        struct Access<'de> {
-            deserializer: Deserializer<'de>,
-            len:          usize,
-        }
-
-        impl<'de> de::SeqAccess<'de> for Access<'de> {
-            type Error = Error;
-
-            fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
-            where
-                T: de::DeserializeSeed<'de>,
-            {
-                if self.len > 0 {
-                    self.len -= 1;
-                    let value = de::DeserializeSeed::deserialize(seed, &mut self.deserializer)?;
-                    Ok(Some(value))
-                } else {
-                    Ok(None)
-                }
-            }
-
-            fn size_hint(&self) -> Option<usize> {
-                Some(self.len)
-            }
-        }
-
         let slice = self.parse_list()?;
-        visitor.visit_seq(Access {
-            deserializer: Deserializer { input: slice },
-            len,
-        })
-        // TODO: Check for trailing data
+        dbg!(hex::encode(slice));
+        let mut inner = Deserializer { input: slice };
+        let result = visitor.visit_seq(SeqAccess {
+            deserializer: &mut inner,
+            length:       Some(len),
+        })?;
+        inner.finish()?;
+        Ok(result)
     }
 
     fn deserialize_tuple_struct<V>(
@@ -346,5 +327,42 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         V: de::Visitor<'de>,
     {
         Err(Error::UnsupportedType)
+    }
+}
+
+struct SeqAccess<'de, 'a> {
+    deserializer: &'a mut Deserializer<'de>,
+    length:       Option<usize>,
+}
+
+impl<'de, 'a> de::SeqAccess<'de> for SeqAccess<'de, 'a> {
+    type Error = Error;
+
+    fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
+    where
+        T: de::DeserializeSeed<'de>,
+    {
+        dbg!(self.length, self.deserializer.input.len());
+        let done = if let Some(length) = self.length {
+            if length > 0 {
+                self.length = Some(length - 1);
+                false
+            } else {
+                true
+            }
+        } else {
+            self.deserializer.input.is_empty()
+        };
+        dbg!(done);
+        if done {
+            Ok(None)
+        } else {
+            let value = de::DeserializeSeed::deserialize(seed, &mut *self.deserializer)?;
+            Ok(Some(value))
+        }
+    }
+
+    fn size_hint(&self) -> Option<usize> {
+        self.length
     }
 }

@@ -38,10 +38,11 @@ pub struct BlockHeader {
 
 #[cfg(test)]
 mod test {
-    use super::{super::rlp_hash::RlpHash as _, *};
+    use super::*;
     use crate::{
         serde::rlp::{from_rlp, to_rlp},
         test::prelude::assert_eq,
+        utils::rlp,
     };
     use serde_json::{from_value, json, to_value, Value as JsonValue};
 
@@ -137,14 +138,6 @@ mod test {
         assert_eq!(
             hex::encode(to_rlp(&genesis_header()).unwrap()),
             hex::encode(genesis_rlp())
-        );
-    }
-
-    #[test]
-    fn genesis_rlp_decode() {
-        assert_eq!(
-            from_rlp::<BlockHeader>(&genesis_rlp()).unwrap(),
-            genesis_header()
         );
     }
 }

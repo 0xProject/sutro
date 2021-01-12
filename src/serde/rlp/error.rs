@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use serde::{de, ser};
 
-#[derive(Clone, Debug, Error)]
+#[derive(Debug, Error)]
 pub enum Error {
     #[error("type can not be encoded in RLP")]
     UnsupportedType,
@@ -18,8 +18,14 @@ pub enum Error {
     #[error("expected list, found bytes")]
     UnexpectedBytes,
 
+    #[error("invalid call to serializer")]
+    InvalidSerialization,
+
     #[error("error reading string: {0}")]
     Utf8Error(#[from] std::str::Utf8Error),
+
+    #[error("io error: {0}")]
+    IoError(#[from] std::io::Error),
 
     #[error("serde error: {0}")]
     Custom(String),
