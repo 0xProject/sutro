@@ -1,6 +1,7 @@
 macro_rules! short_length_serde {
     ($name:ident, $length:expr) => {
         pub mod $name {
+            use crate::require;
             use serde::{de, ser};
             use std::{cmp::min, fmt};
 
@@ -75,8 +76,12 @@ macro_rules! short_length_serde {
                         where
                             E: de::Error,
                         {
+                            require!(
+                                value.len() <= $length,
+                                E::invalid_length(value.len(), &"too many bytes for target type")
+                            );
                             let mut result = [0; $length];
-                            result[(8 - value.len())..].copy_from_slice(value);
+                            result[($length - value.len())..].copy_from_slice(value);
                             Ok(result)
                         }
                     }

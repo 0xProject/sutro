@@ -120,14 +120,10 @@ impl<'a, W: Write> serde::Serializer for &'a mut Serializer<W> {
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-        if v == 0 {
-            self.serialize_bytes(&[0])
-        } else {
-            let bytes = v.to_be_bytes();
-            let leading_zeros = (v.leading_zeros() / 8) as usize;
-            let meat = &bytes[leading_zeros..];
-            self.serialize_bytes(meat)
-        }
+        let bytes = v.to_be_bytes();
+        let zeros = (v.leading_zeros() / 8) as usize;
+        let bytes = &bytes[zeros..];
+        self.serialize_bytes(bytes)
     }
 
     fn serialize_f32(self, _v: f32) -> Result<Self::Ok, Self::Error> {

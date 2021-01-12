@@ -112,17 +112,8 @@ impl EthereumRpc for RpcHandler {
         let block =
             crate::serde::rlp::from_rlp::<crate::chain::types::Block>(bytes.0.as_slice()).unwrap();
         debug!("Block: {:#?}", &block);
-        debug!("Tx hash = {:?}", block.transactions.rlp_hash());
+        debug!("Tx hash = {:?}", block.transactions.trie_hash());
         debug!("Ommer hash = {:?}", block.ommers.rlp_hash());
-
-        let tx0 = &block.transactions[0];
-        let tx0_rlp = to_rlp(tx0).unwrap();
-        dbg!(hex::encode(&tx0_rlp));
-        let mut map = std::collections::HashMap::new();
-        map.insert(vec![0x80_u8], tx0_rlp);
-        let (root, _) = trie::build(&map);
-        dbg!(root);
-
         Ok(U256::zero())
     }
 

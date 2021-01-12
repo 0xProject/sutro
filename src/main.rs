@@ -14,7 +14,10 @@ mod server;
 mod utils;
 
 pub mod prelude {
-    pub use crate::{require, utils::RlpHash as _};
+    pub use crate::{
+        require,
+        utils::{RlpHash as _, TrieHash as _},
+    };
     pub use anyhow::{anyhow, Context as _, Result as AnyResult};
     pub use futures::prelude::*;
     pub use hex_literal::hex;
