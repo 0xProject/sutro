@@ -25,19 +25,20 @@ impl RpcChain {
 // TODO: Async & Result ?
 impl ChainState for RpcChain {
     fn block(&self) -> BlockInfo {
-        let result: AnyResult<BlockHeader> = block_on(async {
-            Ok(self
-                .client
-                .get_block_by_number(BlockNumber::Latest, false)
-                .await
-                .map_err(|err| anyhow!("Error: {}", err))
-                .context("Fetching latest block number")?
-                .ok_or_else(|| anyhow!("Latest block not found"))?)
-        });
-        let block = result.unwrap();
-        BlockInfo {
-            timestamp: block.timestamp.into_inner(),
-        }
+        todo!();
+        // let result: AnyResult<BlockHeader> = block_on(async {
+        //     Ok(self
+        //         .client
+        //         .get_block_by_number(BlockNumber::Latest, false)
+        //         .await
+        //         .map_err(|err| anyhow!("Error: {}", err))
+        //         .context("Fetching latest block number")?
+        //         .ok_or_else(|| anyhow!("Latest block not found"))?)
+        // });
+        // let block = result.unwrap();
+        // BlockInfo {
+        //     timestamp: block.timestamp.into_inner(),
+        // }
     }
 
     fn nonce(&self, _address: &U256) -> usize {

@@ -1,3 +1,11 @@
+/// Implements Ethereum JSON-RPC quantity encoding.
+///
+/// * '0x' prefix
+/// * Minimal number of nibbles, potentially odd, but at leas one.
+/// * No leading zeros except in 0x0.
+///
+/// See <https://eth.wiki/json-rpc/API#hex-value-encoding>
+
 macro_rules! short_length_serde {
     ($name:ident, $length:expr) => {
         pub mod $name {

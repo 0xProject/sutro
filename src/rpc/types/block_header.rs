@@ -6,7 +6,6 @@ use crate::prelude::*;
 #[serde(rename_all = "camelCase")]
 pub struct BlockHeader {
     pub number:            Option<Hex<u64>>,
-    pub hash:              Option<U256>,
     pub mix_hash:          Option<U256>,
     pub parent_hash:       U256,
     pub nonce:             Option<HexFull<u64>>,
@@ -19,13 +18,15 @@ pub struct BlockHeader {
     pub receipts_root:     U256,
     pub miner:             Address,
     pub difficulty:        Hex<u64>,
-    pub total_difficulty:  Hex<u64>,
     pub extra_data:        Bytes, // Max 32 bytes.
     pub gas_limit:         Hex<u64>,
     pub gas_used:          Hex<u64>,
     pub timestamp:         Hex<u64>,
     pub transactions:      TransactionEntries,
-    pub size:              Hex<u64>,
+
+    pub hash:             Option<U256>,
+    pub total_difficulty: Hex<u64>,
+    pub size:             Hex<u64>,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]

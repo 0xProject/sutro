@@ -5,6 +5,9 @@ mod bloom_filter;
 mod transaction;
 
 pub use self::{
-    address::Address, block::Block, block_header::BlockHeader, bloom_filter::BloomFilter,
-    transaction::Transaction,
+    address::Address,
+    block::{Block, ConciseBlock, FullBlock},
+    block_header::BlockHeader,
+    bloom_filter::BloomFilter,
+    transaction::{RpcTransaction, Transaction},
 };

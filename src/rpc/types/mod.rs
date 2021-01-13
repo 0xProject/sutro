@@ -1,6 +1,7 @@
 //! These types are mostly copied from the `web3` crate, but adjusted for our
 //! needs.
 
+mod account_range;
 mod address;
 mod block_header;
 mod block_number;
@@ -10,14 +11,17 @@ mod call;
 mod genesis_config;
 mod hex;
 mod hex_full;
+mod hex_mid;
 mod hexable;
 mod log;
 mod log_filter;
+mod storage_range;
 mod transaction;
 mod transaction_receipt;
 mod value_or_array;
 
 pub use self::{
+    account_range::AccountRange,
     address::Address,
     block_header::{BlockHeader, TransactionEntries},
     block_number::BlockNumber,
@@ -27,9 +31,11 @@ pub use self::{
     genesis_config::GenesisConfig,
     hex::Hex,
     hex_full::HexFull,
+    hex_mid::HexMid,
     hexable::Hexable,
     log::{Log, LogBlock},
     log_filter::LogFilter,
+    storage_range::{StorageRange, StorageSlot},
     transaction::Transaction,
     transaction_receipt::{TransactionReceipt, TransactionStatus},
     value_or_array::ValueOrArray,

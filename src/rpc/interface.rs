@@ -1,8 +1,8 @@
 use super::types::{
-    Address, BlockHeader, BlockNumber, Bytes, CallRequest, GenesisConfig, Hex, Log, LogFilter,
-    TransactionReceipt,
+    AccountRange, Address, BlockHeader, BlockNumber, Bytes, CallRequest, GenesisConfig, Hex, Log,
+    LogFilter, StorageRange, TransactionReceipt,
 };
-use crate::prelude::*;
+use crate::{chain::types::FullBlock, prelude::*};
 use jsonrpc_core::Result as RpcResult;
 use jsonrpc_derive::rpc;
 
@@ -20,22 +20,29 @@ pub trait EthereumRpc {
     #[rpc(name = "eth_sendTransaction")]
     fn send_transaction(&self, tx: web3::types::TransactionRequest) -> RpcResult<Hex<U256>>;
 
+    #[rpc(name = "eth_blockNumber")]
+    fn block_number(&self) -> RpcResult<Hex<u64>>;
+
     #[rpc(name = "eth_getBlockByNumber")]
     fn get_block_by_number(
         &self,
         block_number: BlockNumber,
         full: bool,
-    ) -> RpcResult<Option<BlockHeader>>;
+    ) -> RpcResult<Option<FullBlock>>;
 
     /// See <https://eth.wiki/json-rpc/API#eth_getblockbyhash>
     #[rpc(name = "eth_getBlockByHash")]
-    fn get_block_by_hash(&self, block_hash: U256, full: bool) -> RpcResult<Option<BlockHeader>>;
+    fn get_block_by_hash(&self, block_hash: U256, full: bool) -> RpcResult<Option<FullBlock>>;
 
     #[rpc(name = "eth_gasPrice")]
     fn gas_price(&self) -> RpcResult<Hex<U256>>;
 
     #[rpc(name = "eth_getTransactionCount")]
     fn get_nonce(&self, address: Address, block_number: BlockNumber) -> RpcResult<Hex<u64>>;
+
+    /// See <https://eth.wiki/json-rpc/API#eth_getbalance>
+    #[rpc(name = "eth_getBalance")]
+    fn get_balance(&self, address: Address, block_number: BlockNumber) -> RpcResult<Hex<U256>>;
 
     /// See <https://eth.wiki/json-rpc/API#eth_getlogs>
     #[rpc(name = "eth_getLogs")]
@@ -91,6 +98,27 @@ pub trait EthereumRpc {
 
     #[rpc(name = "test_importRawBlock")]
     fn test_import_raw_block(&self, block: Bytes) -> RpcResult<U256>;
+
+    /// See <https://github.com/ethereum/retesteth/wiki/RPC-Methods#debug_accountrange>
+    #[rpc(name = "debug_accountRange")]
+    fn account_range(
+        &self,
+        block_id: String,
+        tx_index: u64,
+        start: U256,
+        max_results: usize,
+    ) -> RpcResult<AccountRange>;
+
+    /// See <https://github.com/ethereum/retesteth/wiki/RPC-Methods#debug_storagerangeat>
+    #[rpc(name = "debug_storageRangeAt")]
+    fn storage_range(
+        &self,
+        block_id: String,
+        tx_index: u64,
+        address: Address,
+        start: U256,
+        max_results: usize,
+    ) -> RpcResult<StorageRange>;
 
     // Geth debug extensions
     //

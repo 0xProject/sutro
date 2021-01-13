@@ -59,9 +59,8 @@ pub async fn fork(url: &str) -> AnyResult<Fork<Cache<RpcChain>>> {
         .map_err(|err| anyhow!("Error: {}", err))
         .context("Fetching latest block number")?
         .ok_or_else(|| anyhow!("Latest block not found"))?
-        .number
-        .ok_or_else(|| anyhow!("Latest block has no number"))?
-        .into_inner();
+        .header
+        .number;
     info!("Forking from block number {}", latest);
     let block_number = BlockNumber::Number(latest);
 

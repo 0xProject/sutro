@@ -12,11 +12,12 @@ pub struct Transaction {
     nonce:     u64,
     #[serde(with = "short_u64")]
     gas_price: u64,
-    #[serde(with = "short_u64")]
+    #[serde(with = "short_u64", rename = "gas")]
     gas_limit: u64,
-    to:        Address,
+    to:        Address, // To do: encode as null for contract creation
     #[serde(with = "short_u256")]
     value:     U256,
+    #[serde(rename = "input")]
     data:      Bytes,
     #[serde(with = "short_u64")]
     v:         u64, // TODO u8
@@ -24,4 +25,21 @@ pub struct Transaction {
     r:         U256,
     #[serde(with = "fixed_u256")]
     s:         U256,
+}
+
+#[derive(Clone, Default, PartialEq, PartialOrd, Eq, Ord, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RpcTransaction {
+    #[serde(flatten)]
+    pub transaction: Transaction,
+
+    #[serde(with = "fixed_u256")]
+    pub block_hash:        U256,
+    #[serde(with = "short_u64")]
+    pub block_number:      u64,
+    #[serde(with = "short_u64")]
+    pub transaction_index: u64,
+    pub from:              Address,
+    #[serde(with = "fixed_u256")]
+    pub hash:              U256,
 }

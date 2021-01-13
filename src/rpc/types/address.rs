@@ -8,7 +8,13 @@ use std::{fmt, fmt::Debug};
 ///
 /// * Add check sum
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
-pub struct Address([u8; 20]);
+pub struct Address(pub [u8; 20]);
+
+impl From<[u8; 20]> for Address {
+    fn from(value: [u8; 20]) -> Self {
+        Self(value)
+    }
+}
 
 impl Debug for Address {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

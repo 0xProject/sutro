@@ -3,5 +3,11 @@
         {
             "path": "."
         }
-    ]
+    ],
+    "settings": {
+        "cSpell.words": [
+            "Ommer",
+            "ommers"
+        ]
+    }
 }

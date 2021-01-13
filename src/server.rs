@@ -1,5 +1,7 @@
+use std::sync::RwLock;
+
 use super::{fetch::fetch, Command, Options};
-use crate::{prelude::*, rpc};
+use crate::{chain::types::Block, prelude::*, rpc};
 
 pub(super) async fn async_main(options: Options) -> AnyResult<()> {
     match options.command {
@@ -25,6 +27,8 @@ async fn chain(url: String) -> AnyResult<()> {
         client_version: "sutro/0.0.0".into(),
         chain_id:       1337,
         gas_price:      U256::zero(),
+        genesis:        RwLock::new(Block::default()),
+        header:         RwLock::new(Block::default()),
     };
     let addr = "0.0.0.0:8545".parse()?;
     let server = rpc::serve(&addr, rpc_handler)?;
