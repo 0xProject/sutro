@@ -9,13 +9,13 @@ use arrayvec::ArrayVec;
 /// See <https://ethereum.github.io/yellowpaper/paper.pdf>
 /// See <https://eth.wiki/json-rpc/API#eth_getblockbyhash>
 #[derive(Clone, Default, PartialEq, PartialOrd, Eq, Ord, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(default, rename_all = "camelCase")]
 pub struct BlockHeader {
     #[serde(with = "fixed_u256")]
     pub parent_hash:       U256,
     #[serde(rename = "sha3Uncles", with = "fixed_u256")]
     pub ommers_hash:       U256,
-    #[serde(rename = "miner")]
+    #[serde(rename = "miner", alias = "author")]
     pub beneficiary:       Address,
     #[serde(with = "fixed_u256")]
     pub state_root:        U256,

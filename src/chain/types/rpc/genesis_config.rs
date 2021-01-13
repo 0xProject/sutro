@@ -1,5 +1,8 @@
-use super::{super::Address, Hex};
-use crate::{prelude::*, serde::bytes};
+use super::super::{Address, BlockHeader};
+use crate::{
+    prelude::*,
+    serde::{bytes, short_u64},
+};
 use arrayvec::ArrayVec;
 use std::collections::HashMap;
 
@@ -7,8 +10,8 @@ use std::collections::HashMap;
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GenesisConfig {
-    pub accounts:    HashMap<String, GenesisAccount>,
-    pub genesis:     GenesisBlock,
+    pub accounts:    HashMap<Address, GenesisAccount>,
+    pub genesis:     BlockHeader,
     pub seal_engine: SealEngine,
 }
 
@@ -18,21 +21,9 @@ pub struct GenesisAccount {
     pub balance: U256,
     #[serde(with = "bytes")]
     pub code:    Vec<u8>,
-    pub nonce:   Hex<u64>,
+    #[serde(with = "short_u64")]
+    pub nonce:   u64,
     pub storage: HashMap<U256, U256>,
-}
-
-#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct GenesisBlock {
-    pub author:     Address,
-    pub difficulty: Hex<u64>,
-    #[serde(with = "bytes")]
-    pub extra_data: ArrayVec<[u8; 32]>,
-    pub gas_limit:  Hex<u64>,
-    pub mix_hash:   U256,
-    pub nonce:      Hex<u64>, // TODO: Always 8 bytes
-    pub timestamp:  Hex<u64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

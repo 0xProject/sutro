@@ -2,7 +2,7 @@ use crate::{prelude::*, serde::fixed20};
 use std::{fmt, fmt::Debug};
 
 /// Ethereum address
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
 pub struct Address(#[serde(with = "fixed20")] [u8; 20]);
 
 impl From<[u8; 20]> for Address {
