@@ -2,7 +2,7 @@ use crate::{
     chain::types::{
         rpc::{
             AccountRange, BlockNumber, Bytes, CallRequest, GenesisConfig, Hex, Log, LogFilter,
-            StorageRange, TransactionReceipt,
+            StorageRange, Transaction, TransactionReceipt,
         },
         Address, FullBlock,
     },
@@ -23,7 +23,7 @@ pub trait EthereumRpc {
 
     /// See <https://eth.wiki/json-rpc/API#eth_sendtransaction>
     #[rpc(name = "eth_sendTransaction")]
-    fn send_transaction(&self, tx: web3::types::TransactionRequest) -> RpcResult<Hex<U256>>;
+    fn send_transaction(&self, tx: Transaction) -> RpcResult<Hex<U256>>;
 
     #[rpc(name = "eth_blockNumber")]
     fn block_number(&self) -> RpcResult<Hex<u64>>;

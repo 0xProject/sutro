@@ -1,3 +1,5 @@
+/// Implements Serde RLP support and the various hexadecimal encodings used in
+/// Ethereums JSON-RPC.
 pub mod bytes;
 mod fixed;
 pub mod rlp;

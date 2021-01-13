@@ -3,7 +3,7 @@ use crate::{
     chain::types::{
         rpc::{
             AccountRange, BlockNumber, Bytes, CallRequest, GenesisConfig, Hex, Log, LogFilter,
-            StorageRange, StorageSlot, TransactionReceipt,
+            StorageRange, StorageSlot, Transaction, TransactionReceipt,
         },
         Address, Block, FullBlock, RpcTransaction,
     },
@@ -64,7 +64,7 @@ impl EthereumRpc for RpcHandler {
         Ok(U256::zero().into())
     }
 
-    fn send_transaction(&self, _tx: web3::types::TransactionRequest) -> RpcResult<Hex<U256>> {
+    fn send_transaction(&self, _tx: Transaction) -> RpcResult<Hex<U256>> {
         Ok(U256::zero().into())
     }
 

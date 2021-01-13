@@ -1,7 +1,7 @@
-use crate::require;
+/// Variable length lower-case hex encoding with "0x" prefix
 use hex::encode_to_slice;
 use serde::{de, ser};
-use std::{cmp::min, fmt, iter::FromIterator, marker::PhantomData, str::from_utf8};
+use std::{fmt, iter::FromIterator, marker::PhantomData, str::from_utf8};
 
 pub fn serialize<T, S>(bytes: &T, serializer: S) -> Result<S::Ok, S::Error>
 where
