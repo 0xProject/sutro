@@ -75,13 +75,13 @@ mod test {
             gas_limit:         5000,
             gas_used:          0,
             timestamp:         0,
-            extra_data:        Bytes::from(
-                hex!("11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa").to_vec(),
-            ),
-            mix_hash:          u256h!(
-                "0000000000000000000000000000000000000000000000000000000000000000"
-            ),
-            nonce:             66,
+            extra_data:        hex!(
+                "11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"
+            )
+            .into(),
+
+            mix_hash: u256h!("0000000000000000000000000000000000000000000000000000000000000000"),
+            nonce:    66,
         }
     }
 
