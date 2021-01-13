@@ -2,10 +2,7 @@
 //! needs.
 
 mod account_range;
-mod address;
-mod block_header;
 mod block_number;
-mod bloom_filter;
 mod bytes;
 mod call;
 mod genesis_config;
@@ -22,10 +19,7 @@ mod value_or_array;
 
 pub use self::{
     account_range::AccountRange,
-    address::Address,
-    block_header::{BlockHeader, TransactionEntries},
     block_number::BlockNumber,
-    bloom_filter::BloomFilter,
     bytes::Bytes,
     call::CallRequest,
     genesis_config::GenesisConfig,

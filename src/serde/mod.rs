@@ -1,3 +1,4 @@
+pub mod bytes;
 mod fixed;
 pub mod rlp;
 pub mod short;

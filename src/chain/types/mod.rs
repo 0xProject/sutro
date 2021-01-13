@@ -2,6 +2,7 @@ mod address;
 mod block;
 mod block_header;
 mod bloom_filter;
+pub mod rpc;
 mod transaction;
 
 pub use self::{

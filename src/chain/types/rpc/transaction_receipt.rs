@@ -1,4 +1,7 @@
-use super::{Address, BloomFilter, Hex, Log};
+use super::{
+    super::{Address, BloomFilter},
+    Hex, Log,
+};
 use crate::prelude::*;
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]

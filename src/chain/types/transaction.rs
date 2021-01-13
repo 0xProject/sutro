@@ -1,8 +1,7 @@
 use super::Address;
 use crate::{
     prelude::*,
-    rpc::types::Bytes,
-    serde::{fixed_u256, fixed_u64, short_u256, short_u64},
+    serde::{bytes, fixed_u256, short_u256, short_u64},
 };
 
 #[derive(Clone, Default, PartialEq, PartialOrd, Eq, Ord, Debug, Serialize, Deserialize)]
@@ -17,8 +16,8 @@ pub struct Transaction {
     to:        Address, // To do: encode as null for contract creation
     #[serde(with = "short_u256")]
     value:     U256,
-    #[serde(rename = "input")]
-    data:      Bytes,
+    #[serde(rename = "input", with = "bytes")]
+    data:      Vec<u8>,
     #[serde(with = "short_u64")]
     v:         u64, // TODO u8
     #[serde(with = "fixed_u256")]

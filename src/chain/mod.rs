@@ -13,10 +13,8 @@ pub mod types;
 
 pub use self::{cache::Cache, empty::Empty, fork::Fork, rpc_chain::RpcChain, state_set::StateSet};
 
-use crate::{
-    prelude::*,
-    rpc::{self, types::BlockNumber},
-};
+use self::types::rpc::BlockNumber;
+use crate::{prelude::*, rpc};
 
 /// Constant for the current block
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]

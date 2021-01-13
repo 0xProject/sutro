@@ -1,9 +1,9 @@
 use super::{Address, BloomFilter};
 use crate::{
     prelude::*,
-    rpc::types::Bytes,
-    serde::{fixed_u256, fixed_u64, short_u64},
+    serde::{bytes, fixed_u256, fixed_u64, short_u64},
 };
+use arrayvec::ArrayVec;
 
 /// Constant for the current block
 /// See <https://ethereum.github.io/yellowpaper/paper.pdf>
@@ -34,7 +34,8 @@ pub struct BlockHeader {
     pub gas_used:          u64,
     #[serde(with = "short_u64")]
     pub timestamp:         u64,
-    pub extra_data:        Bytes, // 32 bytes or less. TODO: Tinyvec
+    #[serde(with = "bytes")]
+    pub extra_data:        ArrayVec<[u8; 32]>, // 32 bytes or less. TODO: Tinyvec
     #[serde(with = "fixed_u256")]
     pub mix_hash:          U256,
     #[serde(with = "fixed_u64")]

@@ -1,11 +1,5 @@
 use super::{BlockInfo, ChainState};
-use crate::{
-    prelude::*,
-    rpc::{
-        types::{BlockHeader, BlockNumber},
-        EthereumRpcClient,
-    },
-};
+use crate::{chain::types::rpc::BlockNumber, prelude::*, rpc::EthereumRpcClient};
 use futures::executor::block_on;
 
 pub struct RpcChain {

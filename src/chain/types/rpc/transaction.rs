@@ -1,4 +1,4 @@
-use super::{Address, Bytes, Hex};
+use super::{super::Address, Hex};
 use crate::prelude::*;
 
 /// See <https://eth.wiki/json-rpc/API#eth_gettransactionbyhash>
@@ -11,7 +11,7 @@ pub struct Transaction {
     pub gas:               Hex<u64>,
     pub gas_price:         Hex<U256>,
     pub hash:              U256,
-    pub input:             Bytes,
+    pub input:             Vec<u8>,
     pub nonce:             Hex<u64>,
     pub to:                Option<Address>,
     pub transaction_index: Option<Hex<u64>>,

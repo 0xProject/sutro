@@ -1,14 +1,13 @@
-use super::{
-    types::{
-        AccountRange, Address, BlockHeader, BlockNumber, BloomFilter, Bytes, GenesisConfig, Hex,
-        Log, LogFilter, StorageRange, StorageSlot, TransactionReceipt,
-    },
-    EthereumRpc,
-};
+use super::EthereumRpc;
 use crate::{
-    chain::types::{Block, BlockHeader as ChainHeader, FullBlock, RpcTransaction},
+    chain::types::{
+        rpc::{
+            AccountRange, BlockNumber, Bytes, CallRequest, GenesisConfig, Hex, Log, LogFilter,
+            StorageRange, StorageSlot, TransactionReceipt,
+        },
+        Address, Block, FullBlock, RpcTransaction,
+    },
     prelude::*,
-    serde::rlp::to_rlp,
     utils::RlpHash,
 };
 use jsonrpc_core::Result as RpcResult;
@@ -103,7 +102,7 @@ impl EthereumRpc for RpcHandler {
     }
 
     fn get_nonce(&self, address: Address, _block_number: BlockNumber) -> RpcResult<Hex<u64>> {
-        Ok(match address.0 {
+        Ok(match address.to_array() {
             hex!("a94f5374fce5edbc8e2a8697c15331677e6ebf0b") => 1,
             _ => 0,
         }
@@ -111,7 +110,7 @@ impl EthereumRpc for RpcHandler {
     }
 
     fn get_balance(&self, address: Address, block_number: BlockNumber) -> RpcResult<Hex<U256>> {
-        Ok(match address.0 {
+        Ok(match address.to_array() {
             hex!("0f572e5295c57f15886f9b263e2f6d2d6c7b5ec6") => {
                 u256h!("00000000000000000000000000000000000000000000d3c21bcecceda100000b")
             }
@@ -127,7 +126,7 @@ impl EthereumRpc for RpcHandler {
     }
 
     fn get_code(&self, address: Address, _block_number: BlockNumber) -> RpcResult<Bytes> {
-        Ok(match address.0 {
+        Ok(match address.to_array() {
             hex!("0f572e5295c57f15886f9b263e2f6d2d6c7b5ec6") => {
                 hex!("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7feeeeeeeeeeeeeeeeeeeeeeeeeeeeefeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee1860005500").to_vec()
             }
@@ -136,11 +135,11 @@ impl EthereumRpc for RpcHandler {
         .into())
     }
 
-    fn estimate_gas(&self, _call: super::types::CallRequest) -> RpcResult<Hex<U256>> {
+    fn estimate_gas(&self, _call: CallRequest) -> RpcResult<Hex<U256>> {
         Ok(U256::zero().into())
     }
 
-    fn send_raw_transaction(&self, _data: Bytes) -> RpcResult<U256> {
+    fn send_raw_transaction(&self, _data: Vec<u8>) -> RpcResult<U256> {
         Ok(U256::zero())
     }
 
@@ -192,7 +191,7 @@ impl EthereumRpc for RpcHandler {
 
     fn test_import_raw_block(&self, bytes: Bytes) -> RpcResult<U256> {
         dbg!(&bytes);
-        let block = crate::serde::rlp::from_rlp::<Block>(bytes.0.as_slice()).unwrap();
+        let block = crate::serde::rlp::from_rlp::<Block>(bytes.as_slice()).map_err(parse_error)?;
         debug!("Block: {:#?}", &block);
         debug!("Tx hash = {:?}", block.transactions.trie_hash());
         debug!("Ommer hash = {:?}", block.ommers.rlp_hash());
@@ -238,8 +237,8 @@ impl EthereumRpc for RpcHandler {
         address: Address,
         start: U256,
         max_results: usize,
-    ) -> RpcResult<super::types::StorageRange> {
-        if address.0 == hex!("0f572e5295c57f15886f9b263e2f6d2d6c7b5ec6") {
+    ) -> RpcResult<StorageRange> {
+        if address.to_array() == hex!("0f572e5295c57f15886f9b263e2f6d2d6c7b5ec6") {
             let mut storage = HashMap::new();
             let key = U256::zero().into();
             let value = u256h!("1111111111111111111111111111101111111111111111111111111111111111");
@@ -255,6 +254,11 @@ impl EthereumRpc for RpcHandler {
             })
         }
     }
+}
+
+fn parse_error<T: std::fmt::Display>(err: T) -> jsonrpc_core::Error {
+    warn!("Parse error in RPC handler: {}", err);
+    jsonrpc_core::Error::invalid_params(err.to_string())
 }
 
 fn internal_error<T: std::fmt::Display>(err: T) -> jsonrpc_core::Error {

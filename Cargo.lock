@@ -3105,6 +3105,7 @@ name = "sutro"
 version = "0.0.2"
 dependencies = [
  "anyhow",
+ "arrayvec",
  "async-trait",
  "bytesize",
  "chrono",

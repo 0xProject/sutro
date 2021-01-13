@@ -1,8 +1,13 @@
-use super::types::{
-    AccountRange, Address, BlockHeader, BlockNumber, Bytes, CallRequest, GenesisConfig, Hex, Log,
-    LogFilter, StorageRange, TransactionReceipt,
+use crate::{
+    chain::types::{
+        rpc::{
+            AccountRange, BlockNumber, Bytes, CallRequest, GenesisConfig, Hex, Log, LogFilter,
+            StorageRange, TransactionReceipt,
+        },
+        Address, FullBlock,
+    },
+    prelude::*,
 };
-use crate::{chain::types::FullBlock, prelude::*};
 use jsonrpc_core::Result as RpcResult;
 use jsonrpc_derive::rpc;
 
@@ -58,7 +63,7 @@ pub trait EthereumRpc {
 
     /// See <https://eth.wiki/json-rpc/API#eth_sendrawtransaction>
     #[rpc(name = "eth_sendRawTransaction")]
-    fn send_raw_transaction(&self, data: Bytes) -> RpcResult<U256>;
+    fn send_raw_transaction(&self, data: Vec<u8>) -> RpcResult<U256>;
 
     /// See <https://eth.wiki/json-rpc/API#eth_gettransactionreceipt>
     #[rpc(name = "eth_getTransactionReceipt")]

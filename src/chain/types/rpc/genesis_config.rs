@@ -1,5 +1,6 @@
-use super::{Address, Bytes, Hex};
-use crate::prelude::*;
+use super::{super::Address, Hex};
+use crate::{prelude::*, serde::bytes};
+use arrayvec::ArrayVec;
 use std::collections::HashMap;
 
 // See <https://github.com/ethereum/retesteth/wiki/RPC-Methods#test_setchainparams>
@@ -15,7 +16,8 @@ pub struct GenesisConfig {
 #[serde(rename_all = "camelCase")]
 pub struct GenesisAccount {
     pub balance: U256,
-    pub code:    Bytes,
+    #[serde(with = "bytes")]
+    pub code:    Vec<u8>,
     pub nonce:   Hex<u64>,
     pub storage: HashMap<U256, U256>,
 }
@@ -25,7 +27,8 @@ pub struct GenesisAccount {
 pub struct GenesisBlock {
     pub author:     Address,
     pub difficulty: Hex<u64>,
-    pub extra_data: Bytes, // Max 32 bytes.
+    #[serde(with = "bytes")]
+    pub extra_data: ArrayVec<[u8; 32]>,
     pub gas_limit:  Hex<u64>,
     pub mix_hash:   U256,
     pub nonce:      Hex<u64>, // TODO: Always 8 bytes

@@ -7,7 +7,6 @@
 mod handler;
 mod interface;
 mod logger;
-pub mod types;
 
 pub use self::{
     handler::RpcHandler,

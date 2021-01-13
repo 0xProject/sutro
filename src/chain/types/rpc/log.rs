@@ -1,4 +1,4 @@
-use super::{Address, Hex};
+use super::{super::Address, Hex};
 use crate::prelude::*;
 
 /// See <https://eth.wiki/json-rpc/API#eth_getfilterchanges>

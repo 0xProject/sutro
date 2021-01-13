@@ -1,5 +1,5 @@
-use super::{Address, BlockNumber, ValueOrArray};
-use crate::prelude::*;
+use super::{BlockNumber, ValueOrArray};
+use crate::{chain::types::Address, prelude::*};
 use serde_with::skip_serializing_none;
 
 /// Log Filter

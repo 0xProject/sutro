@@ -1,4 +1,4 @@
-use super::{Address, Bytes, Hex};
+use super::{super::Address, Hex};
 use crate::prelude::*;
 use serde_with::skip_serializing_none;
 
@@ -13,5 +13,5 @@ pub struct CallRequest {
     pub gas:       Option<Hex<U256>>,
     pub gas_price: Option<Hex<U256>>,
     pub value:     Option<Hex<U256>>,
-    pub data:      Option<Bytes>,
+    pub data:      Option<Vec<u8>>,
 }

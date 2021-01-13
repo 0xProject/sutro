@@ -55,10 +55,11 @@ async fn fetch_batch(
                     .get_block_rlp(block_number)
                     .await
                     .map_err(|err| anyhow!("Error: {}", err))
-                    .context("Fetching block rlp")?;
-                let size = block_rlp.0.len() as u64;
+                    .context("Fetching block rlp")?
+                    .to_vec();
+                let size = block_rlp.len() as u64;
                 info!("Fetched block {} {}", block_number, ByteSize(size));
-                AnyResult::<_>::Ok(block_rlp.0)
+                AnyResult::<_>::Ok(block_rlp)
             }
         })
         .buffered(concurrent_requests)
